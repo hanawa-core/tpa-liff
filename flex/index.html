@@ -248,17 +248,18 @@ details.why .body dd{margin:0;font-size:13px;line-height:1.75;color:var(--ink2)}
         </button>
         <div class="note" style="margin:0">
           <b>保存のしかた</b><br>
-          上の画像を<b>長押し</b>して「画像を保存」を選んでください。<br>
-          そのままInstagramのストーリーズや投稿に使えます。
+          下のボタンを押すと、保存や共有の画面が開きます。<br>
+          出てこないときは、<b>上の画像を長押し</b>して「画像を保存」を選んでください。
         </div>
-        <a class="btn ghost" id="btnDl" download="tpa-flexibility.png" style="text-decoration:none;text-align:center">画像を保存する</a>
+        <button class="btn" id="btnDl">画像を保存 ／ シェアする</button>
+        <p class="muted" id="dlMsg" style="margin:8px 0 0;font-size:12.5px;text-align:center"></p>
       </div>
     </section>
 
     <button class="btn ghost" id="btnAgain">もう一度測る</button>
     <button class="btn ghost" id="btnClose">とじる</button>
     <div class="brand"><img class="logo-sm" src="../assets/tpa_logo_w720.png" alt="TENNIS PHYSICAL ARCHITECT"></div>
-    <p class="foot">※ 本チェックはセルフチェックであり、医学的な診断ではありません。</p>
+    <p class="foot">※ 本チェックはセルフチェックであり、医学的な診断ではありません。<br><span style="opacity:.5">v2026.08.31</span></p>
   </section>
 
 </div>
@@ -685,7 +686,6 @@ function drawShare(){
   g.fillStyle = INK3; g.font = "700 21px " + JP;
   g.fillText("ジュニアテニス専門 フィジカルアカデミー", cx, 1302);
 
-  try{ $("btnDl").href = cv.toDataURL("image/png"); }catch(e){}
 }
 
 $("btnShare").addEventListener("click", function(){
@@ -698,9 +698,48 @@ $("btnShare").addEventListener("click", function(){
     box.scrollIntoView({ behavior:"smooth", block:"start" });
   }
 });
+function dataURLtoFile(du, name){
+  const parts = du.split(",");
+  const mime = /:(.*?);/.exec(parts[0])[1];
+  const bin = atob(parts[1]);
+  const arr = new Uint8Array(bin.length);
+  for(let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new File([arr], name, { type: mime });
+}
+
+$("btnDl").addEventListener("click", function(){
+  const cv = $("shareCanvas"), msg = $("dlMsg");
+  let file, url;
+  try{
+    url = cv.toDataURL("image/png");
+    file = dataURLtoFile(url, "tpa-flexibility.png");
+  }catch(e){
+    msg.textContent = "上の画像を長押しして「画像を保存」を選んでください。";
+    return;
+  }
+  // ① 共有シート（iPhoneはここから「画像を保存」ができます）
+  try{
+    if(navigator.canShare && navigator.canShare({ files: [file] })){
+      navigator.share({ files: [file] }).catch(function(){});
+      msg.textContent = "";
+      return;
+    }
+  }catch(e){}
+  // ② ダウンロード（Android・パソコン）
+  try{
+    const a = document.createElement("a");
+    a.href = url; a.download = "tpa-flexibility.png";
+    document.body.appendChild(a); a.click(); a.remove();
+    msg.textContent = "保存できないときは、上の画像を長押ししてください。";
+  }catch(e){
+    msg.textContent = "上の画像を長押しして「画像を保存」を選んでください。";
+  }
+});
+
 $("btnHideName").addEventListener("click", function(){
   HIDE_NAME = !HIDE_NAME;
   this.setAttribute("aria-pressed", String(HIDE_NAME));
+  $("dlMsg").textContent = "";
   drawShare();
 });
 
