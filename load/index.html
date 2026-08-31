@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="theme-color" content="#F2EDE4">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>練習負荷記録｜TENNIS PHYSICAL ARCHITECT</title>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="../config.js"></script>
+<style>
+:root{
+  --paper:#F2EDE4; --paper2:#FBF8F2; --paper3:#EAE3D6;
+  --ink:#0D1B2A; --ink2:#4A5A6B; --ink3:#7E8B98;
+  --gold:#9A7A2C; --gold-b:#CDA756; --gold-l:rgba(154,122,44,.30);
+  --red:#A8402C; --amber:#8A6A12; --green:#2F6E52;
+  --grid:rgba(13,27,42,.075); --grid2:rgba(13,27,42,.045);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic",sans-serif;
+  font-size:15px; line-height:1.75; letter-spacing:.02em;
+  background-image:
+    linear-gradient(var(--grid2) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid2) 1px,transparent 1px),
+    linear-gradient(var(--grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:14px 14px,14px 14px,70px 70px,70px 70px;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.wrap{max-width:520px;margin:0 auto;padding:20px 18px 40px}
+.eyebrow{font-size:10px;letter-spacing:.32em;color:var(--gold);font-weight:800;margin:0 0 6px}
+h1{font-size:21px;line-height:1.5;margin:0 0 10px;font-weight:800}
+h2{font-size:17px;margin:0 0 8px;font-weight:800}
+p{margin:0 0 12px}
+.muted{color:var(--ink2);font-size:13px;line-height:1.7}
+.rule{height:1px;background:var(--gold-l);margin:18px 0}
+.card{background:var(--paper2);border:1px solid rgba(13,27,42,.14);border-radius:4px;padding:16px;margin:0 0 14px;
+  box-shadow:0 1px 0 rgba(13,27,42,.05)}
+.btn{display:block;width:100%;border:0;border-radius:4px;padding:15px;font-size:16px;font-weight:800;
+  font-family:inherit;cursor:pointer;background:var(--ink);color:var(--paper2);margin-top:6px;letter-spacing:.05em}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid rgba(13,27,42,.3)}
+.btn:disabled{opacity:.28}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.hide{display:none !important}
+.prog{display:flex;gap:5px;margin:0 0 18px}
+.prog i{flex:1;height:3px;background:rgba(13,27,42,.12);border-radius:2px}
+.prog i.on{background:var(--gold-b)}
+.num{font-size:34px;font-weight:900;color:var(--gold);line-height:1;font-family:Georgia,serif}
+.area{font-size:12px;color:var(--ink3);letter-spacing:.06em}
+.videoBtn{display:flex;align-items:center;gap:10px;justify-content:center;
+  border:1px solid var(--gold-l);border-radius:4px;padding:13px;color:var(--gold);
+  text-decoration:none;font-weight:800;font-size:14px;background:rgba(205,167,86,.14)}
+.sideLabel{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;margin:16px 0 8px}
+.sideLabel b{display:inline-flex;width:26px;height:26px;border-radius:50%;background:var(--ink);
+  color:var(--paper2);align-items:center;justify-content:center;font-size:13px}
+.opt{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;
+  background:var(--paper2);border:1px solid rgba(13,27,42,.16);border-radius:4px;
+  padding:11px 12px;margin:0 0 7px;color:var(--ink);font-family:inherit;font-size:13.5px;line-height:1.55;cursor:pointer}
+.opt .pt{flex:0 0 auto;font-weight:900;font-size:12px;padding:2px 8px;border-radius:3px;
+  background:rgba(13,27,42,.08);color:var(--ink2)}
+.opt[aria-pressed="true"]{border-color:var(--gold);background:rgba(205,167,86,.2);box-shadow:inset 0 0 0 1px var(--gold)}
+.opt[aria-pressed="true"] .pt{background:var(--gold);color:#fff}
+.opt.pain .pt{background:rgba(168,64,44,.12);color:var(--red)}
+.opt.pain[aria-pressed="true"]{border-color:var(--red);background:rgba(168,64,44,.12);box-shadow:inset 0 0 0 1px var(--red)}
+.opt.pain[aria-pressed="true"] .pt{background:var(--red);color:#fff}
+.total{text-align:center;padding:22px 0 6px}
+.total .big{font-size:62px;font-weight:900;color:var(--ink);line-height:1;font-family:Georgia,serif}
+.total .max{font-size:17px;color:var(--ink3);font-weight:700}
+.delta{display:inline-block;margin-top:10px;font-size:13px;font-weight:800;padding:4px 12px;border-radius:20px}
+.delta.up{background:rgba(47,110,82,.14);color:var(--green)}
+.delta.flat{background:rgba(13,27,42,.07);color:var(--ink2)}
+.delta.down{background:rgba(168,64,44,.13);color:var(--red)}
+table.res{width:100%;border-collapse:collapse;font-size:13.5px}
+table.res th{font-size:11px;color:var(--ink3);font-weight:800;padding:0 0 8px;text-align:center;letter-spacing:.08em}
+table.res th:first-child{text-align:left}
+table.res td{padding:9px 0;border-top:1px solid rgba(13,27,42,.12);text-align:center;vertical-align:middle}
+table.res td:first-child{text-align:left;font-weight:700}
+.chip{display:inline-block;min-width:30px;padding:2px 7px;border-radius:3px;font-weight:900;font-size:12px}
+.s3{background:rgba(47,110,82,.15);color:var(--green)}
+.s2{background:rgba(138,106,18,.16);color:var(--amber)}
+.s1{background:rgba(168,64,44,.14);color:var(--red)}
+.s0{background:var(--red);color:#fff}
+.arrow{font-size:11px;color:var(--ink3);margin-left:3px}
+.arrow.up{color:var(--green)}.arrow.down{color:var(--red)}
+.note{background:rgba(205,167,86,.14);border-left:3px solid var(--gold-b);padding:12px 14px;
+  border-radius:0 4px 4px 0;font-size:13.5px;line-height:1.8;margin:0 0 12px}
+.warn{background:rgba(168,64,44,.09);border-left:3px solid var(--red)}
+.foot{font-size:11.5px;color:var(--ink3);line-height:1.8;text-align:center;margin-top:26px}
+.brand{text-align:center;margin:26px 0 0}
+.brand div{font-size:9px;letter-spacing:.34em;color:var(--gold);font-weight:800}
+.spin{width:26px;height:26px;border:2px solid rgba(13,27,42,.18);border-top-color:var(--ink);
+  border-radius:50%;animation:sp .8s linear infinite;margin:60px auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+svg.hist{width:100%;height:120px;display:block}
+
+/* --- このページ固有 --- */
+.dateline{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 14px}
+.dateline .d{font-size:19px;font-weight:800}
+.dateline .w{font-size:12px;color:var(--ink3);letter-spacing:.1em}
+.label{font-size:11px;letter-spacing:.18em;color:var(--gold);font-weight:800;margin:0 0 9px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip2{border:1px solid rgba(13,27,42,.18);background:var(--paper2);border-radius:4px;
+  padding:9px 13px;font-size:14px;font-weight:700;font-family:inherit;color:var(--ink);cursor:pointer}
+.chip2[aria-pressed="true"]{background:var(--ink);color:var(--paper2);border-color:var(--ink)}
+.chip2.rest{color:var(--ink3)}
+.rpe{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.rpeb{border:1px solid rgba(13,27,42,.18);background:var(--paper2);border-radius:4px;padding:9px 2px 7px;
+  font-family:inherit;color:var(--ink);cursor:pointer;text-align:center;line-height:1.25}
+.rpeb b{display:block;font-size:19px;font-weight:900;font-family:Georgia,serif}
+.rpeb span{display:block;font-size:9.5px;color:var(--ink3);letter-spacing:0}
+.rpeb[aria-pressed="true"]{background:var(--gold-b);border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}
+.rpeb[aria-pressed="true"] span{color:#4A3A10}
+.saved{display:flex;align-items:center;gap:8px;background:rgba(47,110,82,.12);border-left:3px solid var(--green);
+  color:var(--green);font-weight:800;font-size:13.5px;padding:11px 13px;border-radius:0 4px 4px 0;margin:0 0 14px}
+.dots{display:flex;gap:6px;margin:12px 0 4px}
+.dots i{flex:1;height:26px;border-radius:3px;border:1px solid rgba(13,27,42,.15);background:var(--paper2);
+  display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--ink3);font-style:normal}
+.dots i.on{background:var(--ink);border-color:var(--ink);color:var(--paper2);font-weight:800}
+.dots i.on.rest{background:var(--paper3);border-color:rgba(13,27,42,.18);color:var(--ink3);font-weight:700}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 12px}
+.stat{background:var(--paper2);border:1px solid rgba(13,27,42,.14);border-radius:4px;padding:13px}
+.stat .k{font-size:10px;letter-spacing:.13em;color:var(--ink3);font-weight:800}
+.stat .v{font-size:27px;font-weight:900;font-family:Georgia,serif;line-height:1.2}
+.stat .u{font-size:11px;color:var(--ink3);font-weight:700}
+.stat.wide{grid-column:1/-1}
+.bar{position:relative;height:8px;background:rgba(13,27,42,.1);border-radius:3px;overflow:hidden;margin-top:9px}
+.bar::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(13,27,42,.45)}
+.bar i{display:block;height:100%;background:var(--gold-b)}
+.logo{display:block;width:196px;max-width:56%;height:auto;margin:2px auto 20px}
+.logo-sm{display:block;width:150px;height:auto;margin:0 auto;opacity:.72}
+svg.g{width:100%;display:block}
+.legend{font-size:11px;color:var(--ink3);margin:6px 0 0;text-align:center}
+.tabs{display:flex;gap:0;border-bottom:1px solid rgba(13,27,42,.15);margin:0 0 16px}
+.tabs button{flex:1;background:none;border:0;border-bottom:2px solid transparent;padding:10px 0;
+  font-family:inherit;font-size:14px;font-weight:800;color:var(--ink3);cursor:pointer}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--gold-b)}
+.hlist{font-size:13.5px}
+.hlist .r{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid rgba(13,27,42,.1)}
+.hlist .r b{font-weight:800}
+.hlist .r .tl{font-family:Georgia,serif;font-weight:900;font-size:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <section id="scLoading">
+    <div class="spin"></div>
+    <p class="muted" style="text-align:center">読み込んでいます…</p>
+  </section>
+
+  <section id="scError" class="hide">
+    <div class="card"><h2>開けませんでした</h2><p class="muted" id="errMsg"></p></div>
+    <button class="btn ghost" onclick="location.reload()">もう一度ひらく</button>
+  </section>
+
+  <section id="scMain" class="hide">
+    <img class="logo" src="../assets/tpa_logo_w720.png" alt="TENNIS PHYSICAL ARCHITECT">
+    <p class="eyebrow">TRAINING LOAD</p>
+    <div class="dateline">
+      <div class="d" id="today"></div>
+      <div class="w">練習負荷記録</div>
+    </div>
+
+    <div class="tabs">
+      <button id="tabIn" class="on">きょうを記録</button>
+      <button id="tabSee">これまで</button>
+    </div>
+
+    <!-- ---------- 入力 ---------- -->
+    <div id="paneIn">
+      <div id="savedBox" class="saved hide"></div>
+
+      <div class="card">
+        <p class="label">1　きょうの練習時間</p>
+        <div class="chips" id="durChips"></div>
+      </div>
+
+      <div class="card">
+        <p class="label">2　きつさ（10段階）</p>
+        <div class="rpe" id="rpeGrid"></div>
+        <p class="muted" style="margin:10px 0 0;font-size:12px">
+          練習が終わってから30分ほど経ったときの、全体の感覚で選んでください。
+        </p>
+      </div>
+
+      <p class="muted" style="text-align:center;font-size:12px" id="tapHint">
+        時間を選んで、きつさを押すと記録されます。
+      </p>
+    </div>
+
+    <!-- ---------- これまで ---------- -->
+    <div id="paneSee" class="hide">
+      <div id="seeBody"></div>
+    </div>
+
+    <div class="brand"><img class="logo-sm" src="../assets/tpa_logo_w720.png" alt="TENNIS PHYSICAL ARCHITECT"></div>
+    <p class="foot">※ 記録は「気づき」のためのものです。診断ではありません。<br>
+      痛みや不調があるときは、練習量にかかわらず専門家にご相談ください。</p>
+  </section>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+const CFG = window.TPA_CONFIG || {};
+const $ = (id) => document.getElementById(id);
+const show = (id) => ["scLoading","scError","scMain"].forEach(s => $(s).classList.toggle("hide", s !== id));
+function fail(m){ $("errMsg").textContent = m; show("scError"); }
+
+const DURS = [0,30,45,60,75,90,120,150,180];
+const RPE = [[1,"とても楽"],[2,"楽"],[3,"ふつう"],[4,"ややきつい"],[5,"きつい"],
+             [6,"かなり"],[7,"とても"],[8,"すごく"],[9,"限界近い"],[10,"もうむり"]];
+const WD = ["日","月","火","水","木","金","土"];
+
+let IDTOKEN=null, NAME="", DATA=null, dur=null, rpe=null, busy=false;
+
+async function api(action, extra){
+  const res = await fetch(CFG.API_URL, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json", "Authorization":"Bearer "+CFG.ANON_KEY },
+    body: JSON.stringify(Object.assign({ action, idToken: IDTOKEN, displayName: NAME }, extra||{}))
+  });
+  const j = await res.json().catch(()=>({error:"bad_response"}));
+  if(!res.ok || j.error) throw new Error(j.error || ("http_"+res.status));
+  return j;
+}
+
+function fmtD(d){ const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(d||""); return m ? ((+m[2])+"月"+(+m[3])+"日") : (d||""); }
+function wd(d){ return WD[new Date(d+"T00:00:00Z").getUTCDay()]; }
+function shift(d,n){ const t=new Date(d+"T00:00:00Z"); t.setUTCDate(t.getUTCDate()+n); return t.toISOString().slice(0,10); }
+
+/* ---------------- 起動 ---------------- */
+async function boot(){
+  try{
+    if(!CFG.API_URL || CFG.API_URL.indexOf("<")===0) return fail("config.js の設定がまだです。");
+    await liff.init({ liffId: CFG.LIFF_ID_LOAD });
+    if(!liff.isLoggedIn()){ liff.login(); return; }
+    IDTOKEN = liff.getIDToken();
+    if(!IDTOKEN) return fail("ログイン情報を取得できませんでした。LIFFのスコープに openid / profile を追加してください。");
+    try{ const p = await liff.getProfile(); NAME = p.displayName||""; }catch(e){}
+    DATA = await api("load_summary");
+    render();
+    show("scMain");
+  }catch(e){ fail("通信に失敗しました（"+e.message+"）。時間をおいて開き直してください。"); }
+}
+
+/* ---------------- 入力UI ---------------- */
+function lastDur(){
+  const r = DATA.records || [];
+  for(let i=r.length-1;i>=0;i--){ if(r[i].duration_min>0) return r[i].duration_min; }
+  return 90;
+}
+function renderInput(){
+  const t = DATA.today_record;
+  if(dur === null) dur = t ? t.duration_min : lastDur();
+  if(t && rpe === null) rpe = t.rpe;
+
+  $("durChips").innerHTML = DURS.map(function(d){
+    return '<button type="button" class="chip2'+(d===0?" rest":"")+'" data-d="'+d+'" aria-pressed="'+(d===dur)+'">'+
+      (d===0 ? "休み" : d+"分")+'</button>';
+  }).join("");
+  $("durChips").querySelectorAll(".chip2").forEach(function(b){
+    b.addEventListener("click", function(){
+      dur = Number(b.dataset.d);
+      $("durChips").querySelectorAll(".chip2").forEach(o=>o.setAttribute("aria-pressed", o===b));
+      if(dur === 0){ save(0,0); }
+    });
+  });
+
+  $("rpeGrid").innerHTML = RPE.map(function(r){
+    return '<button type="button" class="rpeb" data-r="'+r[0]+'" aria-pressed="'+(r[0]===rpe)+'">'+
+      '<b>'+r[0]+'</b><span>'+r[1]+'</span></button>';
+  }).join("");
+  $("rpeGrid").querySelectorAll(".rpeb").forEach(function(b){
+    b.addEventListener("click", function(){
+      rpe = Number(b.dataset.r);
+      $("rpeGrid").querySelectorAll(".rpeb").forEach(o=>o.setAttribute("aria-pressed", o===b));
+      save(dur, rpe);
+    });
+  });
+
+  const sb = $("savedBox");
+  if(t){
+    sb.classList.remove("hide");
+    sb.innerHTML = "✓　きょうは記録済みです（" +
+      (t.duration_min===0 ? "休み" : t.duration_min+"分 × きつさ"+t.rpe) + "）。押し直すと上書きします。";
+  }else sb.classList.add("hide");
+}
+
+async function save(d, r){
+  if(busy) return; busy = true;
+  $("tapHint").textContent = "記録しています…";
+  try{
+    DATA = await api("load_submit", { duration_min: d, rpe: r, record_on: DATA.today });
+    dur = d; rpe = r;
+    render();
+    $("tapHint").textContent = "記録しました。";
+  }catch(e){
+    $("tapHint").textContent = "記録できませんでした（"+e.message+"）。もう一度お試しください。";
+  }finally{ busy = false; }
+}
+
+/* ---------------- これまで ---------------- */
+function renderSee(){
+  const st = DATA.stage, w = DATA.this_week, recs = DATA.records||[];
+  let h = "";
+
+  // 直近7日のドット
+  const days = [];
+  for(let i=6;i>=0;i--) days.push(shift(DATA.today, -i));
+  const map = {}; recs.forEach(r=>map[r.record_on]=r);
+  h += '<div class="card"><p class="label">直近7日</p><div class="dots">' +
+    days.map(function(d){
+      const r = map[d];
+      const cls = r ? (r.srpe_tl>0 ? "on" : "on rest") : "";
+      return '<i class="'+cls+'">'+wd(d)+'</i>';
+    }).join("") + '</div>' +
+    '<p class="muted" style="margin:8px 0 0;font-size:11.5px">押した日が塗られます。休みの日も記録として残ります。</p></div>';
+
+  if(st === "input_only"){
+    const left = Math.max(0, 7 - (DATA.elapsed_days||0));
+    h += '<div class="note"><b>まずは1週間、押してみてください。</b><br>' +
+      '1週間分たまると、その週の負荷（sRPE-TL）と単調度を表示します。' +
+      (left>0 ? '<br><span style="color:var(--ink2);font-size:12.5px">あと '+left+' 日です。</span>' : '') +
+      '</div>';
+    $("seeBody").innerHTML = h + historyList(recs);
+    return;
+  }
+
+  // 今週の数値
+  const tl = w ? Number(w.weekly_tl) : 0;
+  const mono = w && w.monotony !== null ? Number(w.monotony) : null;
+  const strain = w && w.strain !== null ? Number(w.strain) : null;
+
+  h += '<div class="stats">' +
+    '<div class="stat wide"><div class="k">今週の練習負荷　sRPE-TL</div>' +
+      '<div class="v">'+tl.toLocaleString()+' <span class="u">AU</span></div>' +
+      '<div class="u" style="font-weight:400">練習時間（分）× きつさ　の合計</div></div>' +
+    '<div class="stat"><div class="k">単調度　MONOTONY</div><div class="v">'+(mono!==null?mono.toFixed(2):"—")+'</div>' +
+      '<div class="u" style="font-weight:400">週内のばらつき</div></div>' +
+    '<div class="stat"><div class="k">緊張度　STRAIN</div><div class="v">'+(strain!==null?strain.toLocaleString():"—")+'</div>' +
+      '<div class="u" style="font-weight:400">負荷 × 単調度</div></div>';
+  if(DATA.week_ratio !== null && DATA.week_ratio !== undefined){
+    const pct = Math.round(DATA.week_ratio*100);
+    h += '<div class="stat wide"><div class="k">これまでの平均とくらべて</div>' +
+         '<div class="v">'+pct+' <span class="u">%</span></div>' +
+         '<div class="bar"><i style="width:'+Math.min(100, Math.round(DATA.week_ratio*50))+'%"></i></div>' +
+         '<div class="u" style="font-weight:400;margin-top:5px">中央の線が「いつも通り（100%）」です</div></div>';
+  }
+  h += '</div>';
+
+  h += notice(DATA.week_ratio, mono);
+  h += chartCard(recs);
+  h += historyList(recs);
+  $("seeBody").innerHTML = h;
+  drawChart(recs);
+}
+
+function notice(ratio, mono){
+  const out = [];
+  if(ratio !== null && ratio !== undefined){
+    if(ratio >= 1.5)      out.push("今週は、これまでの平均より<b>大きく増えて</b>います。");
+    else if(ratio >= 1.3) out.push("今週は、いつもより<b>増えて</b>います。");
+    else if(ratio >= 0.8) out.push("今週は、これまでと<b>同じくらい</b>の範囲です。");
+    else                  out.push("今週は、いつもより<b>少なめ</b>です。");
+  }
+  if(mono !== null && mono >= 2.0)
+    out.push("毎日ほぼ同じ負荷が続いています。<b>強弱の差が小さい</b>週です。");
+  if(!out.length) return "";
+  return '<div class="note"><b>気づき</b><br>' + out.join("<br>") +
+    '<br><span style="color:var(--ink2);font-size:12.5px">数字は良し悪しではなく、変化に気づくための目安です。</span></div>';
+}
+
+function chartCard(){
+  return '<div class="card"><p class="label">直近28日</p>' +
+    '<svg class="g" id="gsvg" viewBox="0 0 320 130" preserveAspectRatio="none"></svg>' +
+    '<p class="legend">日ごとの練習負荷（分 × きつさ）</p></div>';
+}
+function drawChart(recs){
+  const svg = $("gsvg"); if(!svg) return;
+  const days = []; for(let i=27;i>=0;i--) days.push(shift(DATA.today,-i));
+  const map = {}; (recs||[]).forEach(r=>map[r.record_on]=Number(r.srpe_tl));
+  const vals = days.map(d=>map[d]||0);
+  const max = Math.max(100, ...vals);
+  const W=320,H=130,PAD=14, bw=(W-PAD*2)/days.length;
+  let g = '<line x1="'+PAD+'" y1="'+(H-PAD)+'" x2="'+(W-PAD)+'" y2="'+(H-PAD)+'" stroke="rgba(13,27,42,.18)"/>';
+  vals.forEach(function(v,i){
+    const hgt = (H-PAD*2) * (v/max);
+    const x = PAD + bw*i + 0.8;
+    g += '<rect x="'+x.toFixed(1)+'" y="'+(H-PAD-hgt).toFixed(1)+'" width="'+(bw-1.6).toFixed(1)+
+         '" height="'+Math.max(v>0?1.5:0,hgt).toFixed(1)+'" fill="'+(v>0?"#9A7A2C":"transparent")+'" rx="1"/>';
+  });
+  // 週の区切り
+  days.forEach(function(d,i){
+    if(new Date(d+"T00:00:00Z").getUTCDay()===1 && i>0){
+      const x = PAD + bw*i;
+      g += '<line x1="'+x.toFixed(1)+'" y1="'+PAD+'" x2="'+x.toFixed(1)+'" y2="'+(H-PAD)+'" stroke="rgba(13,27,42,.12)" stroke-dasharray="2 3"/>';
+    }
+  });
+  svg.innerHTML = g;
+}
+function historyList(recs){
+  const r = (recs||[]).slice().reverse().slice(0,14);
+  if(!r.length) return "";
+  return '<div class="card"><p class="label">記録</p><div class="hlist">' +
+    r.map(function(x){
+      return '<div class="r"><div><b>'+fmtD(x.record_on)+'</b> <span class="muted">('+wd(x.record_on)+')</span></div>' +
+        '<div>'+(x.duration_min===0 ? '<span class="muted">休み</span>' :
+          '<span class="muted">'+x.duration_min+'分 × '+x.rpe+'</span>　<span class="tl">'+x.srpe_tl+'</span>')+'</div></div>';
+    }).join("") + '</div></div>';
+}
+
+/* ---------------- 描画 ---------------- */
+function render(){
+  $("today").textContent = fmtD(DATA.today) + "（" + wd(DATA.today) + "）";
+  renderInput();
+  renderSee();
+}
+$("tabIn").addEventListener("click", function(){
+  $("tabIn").classList.add("on"); $("tabSee").classList.remove("on");
+  $("paneIn").classList.remove("hide"); $("paneSee").classList.add("hide");
+});
+$("tabSee").addEventListener("click", function(){
+  $("tabSee").classList.add("on"); $("tabIn").classList.remove("on");
+  $("paneSee").classList.remove("hide"); $("paneIn").classList.add("hide");
+  drawChart(DATA.records);
+});
+boot();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="theme-color" content="#F2EDE4">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>柔軟性チェック｜TENNIS PHYSICAL ARCHITECT</title>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="../config.js"></script>
+<style>
+:root{
+  --paper:#F2EDE4; --paper2:#FBF8F2; --paper3:#EAE3D6;
+  --ink:#0D1B2A; --ink2:#4A5A6B; --ink3:#7E8B98;
+  --gold:#9A7A2C; --gold-b:#CDA756; --gold-l:rgba(154,122,44,.30);
+  --red:#A8402C; --amber:#8A6A12; --green:#2F6E52;
+  --grid:rgba(13,27,42,.075); --grid2:rgba(13,27,42,.045);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic",sans-serif;
+  font-size:15px; line-height:1.75; letter-spacing:.02em;
+  background-image:
+    linear-gradient(var(--grid2) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid2) 1px,transparent 1px),
+    linear-gradient(var(--grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:14px 14px,14px 14px,70px 70px,70px 70px;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.wrap{max-width:520px;margin:0 auto;padding:20px 18px 40px}
+.eyebrow{font-size:10px;letter-spacing:.32em;color:var(--gold);font-weight:800;margin:0 0 6px}
+h1{font-size:21px;line-height:1.5;margin:0 0 10px;font-weight:800}
+h2{font-size:17px;margin:0 0 8px;font-weight:800}
+p{margin:0 0 12px}
+.muted{color:var(--ink2);font-size:13px;line-height:1.7}
+.rule{height:1px;background:var(--gold-l);margin:18px 0}
+.card{background:var(--paper2);border:1px solid rgba(13,27,42,.14);border-radius:4px;padding:16px;margin:0 0 14px;
+  box-shadow:0 1px 0 rgba(13,27,42,.05)}
+.btn{display:block;width:100%;border:0;border-radius:4px;padding:15px;font-size:16px;font-weight:800;
+  font-family:inherit;cursor:pointer;background:var(--ink);color:var(--paper2);margin-top:6px;letter-spacing:.05em}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid rgba(13,27,42,.3)}
+.btn:disabled{opacity:.28}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.hide{display:none !important}
+.prog{display:flex;gap:5px;margin:0 0 18px}
+.prog i{flex:1;height:3px;background:rgba(13,27,42,.12);border-radius:2px}
+.prog i.on{background:var(--gold-b)}
+.num{font-size:34px;font-weight:900;color:var(--gold);line-height:1;font-family:Georgia,serif}
+.area{font-size:12px;color:var(--ink3);letter-spacing:.06em}
+.player{position:relative;width:100%;aspect-ratio:16/9;border:1px solid rgba(13,27,42,.18);
+  border-radius:4px;overflow:hidden;background:var(--ink);margin:0 0 4px;cursor:pointer}
+.player img{width:100%;height:100%;object-fit:cover;display:block;opacity:.82}
+.player iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.player .play{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:8px;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.6);
+  background:linear-gradient(rgba(13,27,42,.18),rgba(13,27,42,.58))}
+.player .play i{width:56px;height:56px;border-radius:50%;background:rgba(205,167,86,.94);
+  display:flex;align-items:center;justify-content:center;font-style:normal;font-size:20px;color:#12202F;padding-left:4px}
+.player .play span{font-size:12.5px;font-weight:800;letter-spacing:.06em}
+.vcap{font-size:11.5px;color:var(--ink3);margin:0 0 4px;text-align:center}
+.sideLabel{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;margin:16px 0 8px}
+.sideLabel b{display:inline-flex;width:26px;height:26px;border-radius:50%;background:var(--ink);
+  color:var(--paper2);align-items:center;justify-content:center;font-size:13px}
+.opt{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;
+  background:var(--paper2);border:1px solid rgba(13,27,42,.16);border-radius:4px;
+  padding:11px 12px;margin:0 0 7px;color:var(--ink);font-family:inherit;font-size:13.5px;line-height:1.55;cursor:pointer}
+.opt .pt{flex:0 0 auto;font-weight:900;font-size:12px;padding:2px 8px;border-radius:3px;
+  background:rgba(13,27,42,.08);color:var(--ink2)}
+.opt[aria-pressed="true"]{border-color:var(--gold);background:rgba(205,167,86,.2);box-shadow:inset 0 0 0 1px var(--gold)}
+.opt[aria-pressed="true"] .pt{background:var(--gold);color:#fff}
+.opt.pain .pt{background:rgba(168,64,44,.12);color:var(--red)}
+.opt.pain[aria-pressed="true"]{border-color:var(--red);background:rgba(168,64,44,.12);box-shadow:inset 0 0 0 1px var(--red)}
+.opt.pain[aria-pressed="true"] .pt{background:var(--red);color:#fff}
+.total{text-align:center;padding:22px 0 6px}
+.total .big{font-size:62px;font-weight:900;color:var(--ink);line-height:1;font-family:Georgia,serif}
+.total .max{font-size:17px;color:var(--ink3);font-weight:700}
+.delta{display:inline-block;margin-top:10px;font-size:13px;font-weight:800;padding:4px 12px;border-radius:20px}
+.delta.up{background:rgba(47,110,82,.14);color:var(--green)}
+.delta.flat{background:rgba(13,27,42,.07);color:var(--ink2)}
+.delta.down{background:rgba(168,64,44,.13);color:var(--red)}
+table.res{width:100%;border-collapse:collapse;font-size:13.5px}
+table.res th{font-size:11px;color:var(--ink3);font-weight:800;padding:0 0 8px;text-align:center;letter-spacing:.08em}
+table.res th:first-child{text-align:left}
+table.res td{padding:9px 0;border-top:1px solid rgba(13,27,42,.12);text-align:center;vertical-align:middle}
+table.res td:first-child{text-align:left;font-weight:700}
+.chip{display:inline-block;min-width:30px;padding:2px 7px;border-radius:3px;font-weight:900;font-size:12px}
+.s3{background:rgba(47,110,82,.15);color:var(--green)}
+.s2{background:rgba(138,106,18,.16);color:var(--amber)}
+.s1{background:rgba(168,64,44,.14);color:var(--red)}
+.s0{background:var(--red);color:#fff}
+.arrow{font-size:11px;color:var(--ink3);margin-left:3px}
+.arrow.up{color:var(--green)}.arrow.down{color:var(--red)}
+.note{background:rgba(205,167,86,.14);border-left:3px solid var(--gold-b);padding:12px 14px;
+  border-radius:0 4px 4px 0;font-size:13.5px;line-height:1.8;margin:0 0 12px}
+.warn{background:rgba(168,64,44,.09);border-left:3px solid var(--red)}
+.foot{font-size:11.5px;color:var(--ink3);line-height:1.8;text-align:center;margin-top:26px}
+.brand{text-align:center;margin:26px 0 0}
+.brand div{font-size:9px;letter-spacing:.34em;color:var(--gold);font-weight:800}
+.spin{width:26px;height:26px;border:2px solid rgba(13,27,42,.18);border-top-color:var(--ink);
+  border-radius:50%;animation:sp .8s linear infinite;margin:60px auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+.logo{display:block;width:196px;max-width:56%;height:auto;margin:2px auto 20px}
+.logo-sm{display:block;width:150px;height:auto;margin:0 auto;opacity:.72}
+svg.hist{width:100%;height:120px;display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ ローディング ============ -->
+  <section id="scLoading">
+    <div class="spin"></div>
+    <p class="muted" style="text-align:center">読み込んでいます…</p>
+  </section>
+
+  <!-- ============ エラー ============ -->
+  <section id="scError" class="hide">
+    <div class="card"><h2>開けませんでした</h2><p class="muted" id="errMsg"></p></div>
+    <button class="btn ghost" onclick="location.reload()">もう一度ひらく</button>
+  </section>
+
+  <!-- ============ イントロ ============ -->
+  <section id="scIntro" class="hide">
+    <img class="logo" src="../assets/tpa_logo_w720.png" alt="TENNIS PHYSICAL ARCHITECT">
+    <h1>ジュニアテニス選手のための<br>身体設計チェック</h1>
+    <p class="muted">家でできる、5つの柔軟性テスト。左右を分けて0〜3点で採点します（30点満点）。</p>
+    <div class="rule"></div>
+    <div class="card">
+      <h2 style="font-size:14px;color:var(--gold);letter-spacing:.1em">MEASURE</h2>
+      <p class="muted" style="margin:0">
+        ① 腸腰筋　② ふくらはぎ　③ ハムストリングス　④ 内転筋　⑤ 臀部<br>
+        所要 約5分／各項目に測り方の動画がついています。
+      </p>
+    </div>
+    <div class="note">
+      測定は<b>2人</b>がおすすめです。保護者の方が「測定コーチ」役をしてください。<br>
+      反動をつけず、痛みのない範囲で行ってください。
+    </div>
+    <div class="note" id="lastBox" style="display:none"></div>
+    <button class="btn" id="btnStart">チェックをはじめる</button>
+    <button class="btn ghost hide" id="btnSkipToResult">前回までの結果を見る</button>
+    <p class="foot">※ 測定・ストレッチ中に痛みが出たら中止してください。<br>気になる症状は専門家にご相談ください。</p>
+  </section>
+
+  <!-- ============ 測定 ============ -->
+  <section id="scTest" class="hide">
+    <div class="prog" id="prog"></div>
+    <div style="display:flex;align-items:flex-end;gap:12px;margin-bottom:4px">
+      <div class="num" id="tNum">1</div>
+      <div style="flex:1">
+        <div class="area" id="tArea"></div>
+        <h1 style="margin:0;font-size:23px" id="tName"></h1>
+      </div>
+    </div>
+    <div class="card" style="padding:13px 15px">
+      <p class="muted" style="margin:0 0 7px" id="tRole"></p>
+      <p class="muted" style="margin:0;color:var(--gold);font-size:12.5px" id="tSign"></p>
+    </div>
+    <div id="tVideoBox"></div>
+    <p class="vcap" id="tVideoCap">タップするとこの画面で再生します</p>
+    <div id="sides"></div>
+    <div class="row" style="margin-top:20px">
+      <button class="btn ghost" id="btnPrev">もどる</button>
+      <button class="btn" id="btnNext" disabled>つぎへ</button>
+    </div>
+  </section>
+
+  <!-- ============ 確認 ============ -->
+  <section id="scConfirm" class="hide">
+    <p class="eyebrow">CONFIRM</p>
+    <h1>この内容で記録します</h1>
+    <div class="card"><table class="res" id="confirmTable"></table></div>
+    <button class="btn" id="btnSubmit">記録する</button>
+    <button class="btn ghost" id="btnBackToTest">修正する</button>
+  </section>
+
+  <!-- ============ 結果 ============ -->
+  <section id="scResult" class="hide">
+    <p class="eyebrow">RESULT</p>
+    <h1 id="resDate"></h1>
+    <div class="card total">
+      <div><span class="big" id="resTotal">0</span><span class="max"> / 30</span></div>
+      <div id="resDelta"></div>
+    </div>
+    <div id="resSummary"></div>
+    <div class="card">
+      <h2 style="font-size:14px;color:var(--gold);letter-spacing:.1em;margin-bottom:12px">項目別</h2>
+      <table class="res" id="resTable"></table>
+      <p class="muted" style="margin:12px 0 0;font-size:11.5px">
+        3＝クリア／2＝イエロー／1＝レッド／0＝痛みで中止
+      </p>
+    </div>
+    <div class="card hide" id="histBox">
+      <h2 style="font-size:14px;color:var(--gold);letter-spacing:.1em;margin-bottom:8px">推移</h2>
+      <svg class="hist" id="hist" viewBox="0 0 320 120" preserveAspectRatio="none"></svg>
+      <p class="muted" id="histLabel" style="margin:6px 0 0;font-size:11.5px"></p>
+    </div>
+    <div class="note">
+      次は<b>2〜3ヶ月後</b>にもう一度測って、変化を見てみましょう。<br>
+      結果が気になる方は、プロフィールのリンクからご覧ください。
+    </div>
+    <button class="btn ghost" id="btnAgain">もう一度測る</button>
+    <button class="btn ghost" id="btnClose">とじる</button>
+    <div class="brand"><img class="logo-sm" src="../assets/tpa_logo_w720.png" alt="TENNIS PHYSICAL ARCHITECT"></div>
+    <p class="foot">※ 本チェックはセルフチェックであり、医学的な診断ではありません。</p>
+  </section>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+const CFG = window.TPA_CONFIG || {};
+const $ = (id) => document.getElementById(id);
+const SCREENS = ["scLoading","scError","scIntro","scTest","scConfirm","scResult"];
+function show(id){ SCREENS.forEach(s => $(s).classList.toggle("hide", s !== id)); window.scrollTo(0,0); }
+function fail(msg){ $("errMsg").textContent = msg; show("scError"); }
+
+const fmtD=(d)=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(d||"");return m?(m[1]+"年"+(+m[2])+"月"+(+m[3])+"日"):(d||"");};
+let ITEMS = [], IDX = 0, ANSWERS = {}, IDTOKEN = null, DISPLAY_NAME = "";
+
+/* ---------------- API ---------------- */
+async function api(action, extra){
+  const res = await fetch(CFG.API_URL, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json", "Authorization":"Bearer " + CFG.ANON_KEY },
+    body: JSON.stringify(Object.assign({ action, idToken: IDTOKEN, displayName: DISPLAY_NAME }, extra||{}))
+  });
+  const j = await res.json().catch(()=>({error:"bad_response"}));
+  if(!res.ok || j.error) throw new Error(j.error || ("http_"+res.status));
+  return j;
+}
+
+/* ---------------- 起動 ---------------- */
+async function boot(){
+  try{
+    if(!CFG.API_URL || CFG.API_URL.indexOf("<") === 0) return fail("config.js の設定がまだです。");
+    await liff.init({ liffId: CFG.LIFF_ID_FLEX });
+    if(!liff.isLoggedIn()){ liff.login(); return; }
+    IDTOKEN = liff.getIDToken();
+    if(!IDTOKEN) return fail("ログイン情報を取得できませんでした。LIFFのスコープに openid / profile を追加してください。");
+    try{ const p = await liff.getProfile(); DISPLAY_NAME = p.displayName || ""; }catch(e){}
+
+    const [itemsRes, resultRes] = await Promise.all([ api("flex_items"), api("flex_result") ]);
+    ITEMS = itemsRes.items || [];
+    if(!ITEMS.length) return fail("測定項目を読み込めませんでした。");
+
+    if(resultRes.latest){
+      LAST = resultRes;
+      $("lastBox").style.display = "block";
+      $("lastBox").innerHTML = "前回の記録：<b>" + fmtD(resultRes.latest.measured_on) + "</b>（" +
+        resultRes.latest.total_score + " / " + resultRes.latest.max_score + "点）";
+      $("btnSkipToResult").classList.remove("hide");
+    }
+    show("scIntro");
+  }catch(e){
+    fail("通信に失敗しました（" + e.message + "）。時間をおいて開き直してください。");
+  }
+}
+let LAST = null;
+
+/* ---------------- 測定画面 ---------------- */
+function renderProgress(){
+  $("prog").innerHTML = ITEMS.map((_,i)=>'<i class="'+(i<=IDX?"on":"")+'"></i>').join("");
+}
+function sideList(item){
+  return item.has_side === false ? [["B","両方"]] : [["L","左"],["R","右"]];
+}
+function renderItem(){
+  const it = ITEMS[IDX];
+  renderProgress();
+  $("tNum").textContent  = String(IDX+1);
+  $("tArea").textContent = it.area;
+  $("tName").textContent = it.name;
+  $("tRole").textContent = it.role_text;
+  $("tSign").textContent = "試合中の目安サイン： " + it.sign_text;
+  renderPlayer(it.video_url, it.name);
+
+  const c = it.criteria || {};
+  $("sides").innerHTML = sideList(it).map(function(s){
+    const side = s[0], label = s[1];
+    return '<div class="sideLabel"><b>'+label+'</b><span>'+label+'側を採点</span></div>' +
+      [3,2,1,0].map(function(pt){
+        const sel = (ANSWERS[it.code] && ANSWERS[it.code][side] === pt) ? "true" : "false";
+        return '<button type="button" class="opt'+(pt===0?" pain":"")+'" aria-pressed="'+sel+'"'+
+               ' data-code="'+it.code+'" data-side="'+side+'" data-pt="'+pt+'">'+
+               '<span class="pt">'+pt+'点</span><span>'+(c[pt]||"")+'</span></button>';
+      }).join("");
+  }).join("");
+
+  $("sides").querySelectorAll(".opt").forEach(function(b){
+    b.addEventListener("click", function(){
+      const code = b.dataset.code, side = b.dataset.side, pt = Number(b.dataset.pt);
+      ANSWERS[code] = ANSWERS[code] || {};
+      ANSWERS[code][side] = pt;
+      $("sides").querySelectorAll('.opt[data-side="'+side+'"]').forEach(function(o){
+        o.setAttribute("aria-pressed", o === b ? "true" : "false");
+      });
+      checkNext();
+    });
+  });
+  $("btnPrev").textContent = IDX === 0 ? "やめる" : "もどる";
+  $("btnNext").textContent = IDX === ITEMS.length-1 ? "確認する" : "つぎへ";
+  checkNext();
+  show("scTest");
+}
+function checkNext(){
+  const it = ITEMS[IDX];
+  const need = sideList(it).map(s=>s[0]);
+  const ok = need.every(s => ANSWERS[it.code] && typeof ANSWERS[it.code][s] === "number");
+  $("btnNext").disabled = !ok;
+}
+
+
+/* ---------------- 動画（LIFF内で再生） ---------------- */
+function ytId(url){
+  if(!url) return null;
+  var m = /(?:youtu\.be\/|v=|\/embed\/|\/shorts\/)([A-Za-z0-9_-]{6,})/.exec(url);
+  return m ? m[1] : null;
+}
+function renderPlayer(url, title){
+  var box = $("tVideoBox"), cap = $("tVideoCap");
+  var id = ytId(url);
+  if(!id){ box.innerHTML = ""; cap.style.display = "none"; return; }
+  cap.style.display = "block";
+  cap.textContent = "タップするとこの画面で再生します";
+  box.innerHTML =
+    '<div class="player" id="pl">' +
+      '<img src="https://i.ytimg.com/vi/' + id + '/hqdefault.jpg" alt="" loading="lazy">' +
+      '<div class="play"><i>&#9654;</i><span>測り方を動画で見る</span></div>' +
+    '</div>';
+  $("pl").addEventListener("click", function(){
+    this.innerHTML =
+      '<iframe src="https://www.youtube-nocookie.com/embed/' + id +
+      '?autoplay=1&playsinline=1&rel=0&modestbranding=1" title="' + (title||"") + '" ' +
+      'allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
+    this.style.cursor = "default";
+    cap.textContent = "再生できないときは、通信環境をご確認ください";
+  }, { once: true });
+}
+
+/* ---------------- 確認 ---------------- */
+function renderConfirm(){
+  let html = '<tr><th>項目</th><th>左</th><th>右</th></tr>';
+  ITEMS.forEach(function(it){
+    const a = ANSWERS[it.code] || {};
+    const cell = (v) => (typeof v === "number") ? '<span class="chip s'+v+'">'+v+'</span>' : '—';
+    if(it.has_side === false){
+      html += '<tr><td>'+it.name+'</td><td colspan="2">'+cell(a.B)+'</td></tr>';
+    }else{
+      html += '<tr><td>'+it.name+'</td><td>'+cell(a.L)+'</td><td>'+cell(a.R)+'</td></tr>';
+    }
+  });
+  const total = Object.keys(ANSWERS).reduce(function(t,k){
+    return t + Object.keys(ANSWERS[k]).reduce((x,s)=>x+ANSWERS[k][s],0); },0);
+  html += '<tr><td>合計</td><td colspan="2"><b style="color:var(--gold);font-size:16px">'+total+'</b> / 30</td></tr>';
+  $("confirmTable").innerHTML = html;
+  show("scConfirm");
+}
+
+/* ---------------- 結果 ---------------- */
+function byItem(pack){
+  const m = {};
+  (pack.values||[]).forEach(function(v){ (m[v.item_code] = m[v.item_code] || {})[v.side] = v.score; });
+  return m;
+}
+function renderResult(data){
+  if(!data || !data.latest) return fail("結果を取得できませんでした。");
+  const items = data.items || ITEMS;
+  const cur = byItem(data.latest);
+  const prev = data.previous ? byItem(data.previous) : null;
+
+  $("resDate").textContent = fmtD(data.latest.measured_on) + " の結果";
+  $("resTotal").textContent = data.latest.total_score;
+  document.querySelector("#scResult .max").textContent = " / " + data.latest.max_score;
+
+  // 前回比
+  const d = $("resDelta");
+  if(data.previous){
+    const diff = data.latest.total_score - data.previous.total_score;
+    const cls = diff > 0 ? "up" : (diff < 0 ? "down" : "flat");
+    const sign = diff > 0 ? "＋" : (diff < 0 ? "−" : "±");
+    d.innerHTML = '<span class="delta '+cls+'">前回（'+data.previous.measured_on+'）から '+sign+Math.abs(diff)+'点</span>';
+  }else{
+    d.innerHTML = '<span class="delta flat">はじめての記録です</span>';
+  }
+
+  // 項目別テーブル（前回比つき）
+  let html = '<tr><th>項目</th><th>左</th><th>右</th></tr>';
+  items.forEach(function(it){
+    const c = cur[it.code] || {}, p = prev ? (prev[it.code] || {}) : {};
+    function cell(side){
+      const v = c[side];
+      if(typeof v !== "number") return '—';
+      let s = '<span class="chip s'+v+'">'+v+'</span>';
+      if(typeof p[side] === "number"){
+        const df = v - p[side];
+        if(df > 0) s += '<span class="arrow up">▲'+df+'</span>';
+        else if(df < 0) s += '<span class="arrow down">▼'+Math.abs(df)+'</span>';
+        else s += '<span class="arrow">−</span>';
+      }
+      return s;
+    }
+    if(it.has_side === false) html += '<tr><td>'+it.name+'</td><td colspan="2">'+cell("B")+'</td></tr>';
+    else html += '<tr><td>'+it.name+'</td><td>'+cell("L")+'</td><td>'+cell("R")+'</td></tr>';
+  });
+  $("resTable").innerHTML = html;
+
+  // 総括
+  $("resSummary").innerHTML = summarize(data.latest, items, cur);
+
+  // 推移
+  const hist = (data.history||[]).slice().reverse();
+  if(hist.length >= 2){ $("histBox").classList.remove("hide"); drawHist(hist); }
+  else $("histBox").classList.add("hide");
+
+  show("scResult");
+}
+
+function summarize(latest, items, cur){
+  const out = [];
+  const total = latest.total_score, max = latest.max_score;
+  const pct = total / max;
+
+  if(latest.pain_count > 0){
+    out.push('<div class="note warn"><b>痛みが出た項目があります。</b><br>' +
+      'その動きは無理に続けないでください。痛みが続く場合は専門家にご相談ください。</div>');
+  }
+
+  let band;
+  if(pct >= 0.90)      band = "テニスの動きに必要な可動域は、全体としてよく確保できています。";
+  else if(pct >= 0.73) band = "おおむね良好です。一部に硬さが残っている項目があります。";
+  else if(pct >= 0.53) band = "全体に硬さが見られます。可動域は運動連鎖の土台になる部分です。";
+  else                 band = "可動域に大きな制限が出ています。まずは土台づくりからの段階です。";
+
+  // 左右差
+  const gaps = [];
+  items.forEach(function(it){
+    const c = cur[it.code] || {};
+    if(typeof c.L === "number" && typeof c.R === "number" && Math.abs(c.L - c.R) >= 2){
+      gaps.push(it.name + "（" + (c.L < c.R ? "左" : "右") + "が硬い）");
+    }
+  });
+  // レッド項目
+  const reds = [];
+  items.forEach(function(it){
+    const c = cur[it.code] || {};
+    ["L","R","B"].forEach(function(s){ if(c[s] === 1 && reds.indexOf(it.name) < 0) reds.push(it.name); });
+  });
+
+  let body = '<div class="note"><b>総括</b><br>' + band;
+  if(reds.length)  body += '<br><br>制限が強い項目： <b>' + reds.join("、") + '</b>';
+  if(gaps.length)  body += '<br>左右差が大きい項目： <b>' + gaps.join("、") + '</b><br>' +
+    '<span style="color:var(--muted);font-size:12.5px">テニスは利き手と回転で身体が偏りやすく、左右差はケガと不調の入り口になります。</span>';
+  if(!reds.length && !gaps.length) body += '<br><br>強い制限や大きな左右差は見られませんでした。';
+  body += '</div>';
+  out.push(body);
+  return out.join("");
+}
+
+function drawHist(hist){
+  const W = 320, H = 120, PAD = 18;
+  const max = 30;
+  const n = hist.length;
+  const x = i => PAD + (W - PAD*2) * (n === 1 ? .5 : i/(n-1));
+  const y = v => H - PAD - (H - PAD*2) * (v/max);
+  let g = '';
+  [0,10,20,30].forEach(function(v){
+    g += '<line x1="'+PAD+'" y1="'+y(v)+'" x2="'+(W-PAD)+'" y2="'+y(v)+'" stroke="rgba(13,27,42,.12)" stroke-width="1"/>';
+  });
+  const pts = hist.map((h,i)=> x(i)+','+y(h.total_score)).join(" ");
+  g += '<polyline points="'+pts+'" fill="none" stroke="#9A7A2C" stroke-width="2.5" stroke-linejoin="round"/>';
+  hist.forEach(function(h,i){
+    g += '<circle cx="'+x(i)+'" cy="'+y(h.total_score)+'" r="4" fill="#FBF8F2" stroke="#9A7A2C" stroke-width="2.5"/>';
+    g += '<text x="'+x(i)+'" y="'+(y(h.total_score)-10)+'" fill="#0D1B2A" font-size="10" font-weight="700" text-anchor="middle">'+h.total_score+'</text>';
+  });
+  $("hist").innerHTML = g;
+  $("histLabel").textContent = hist.map(h=>{const m=/^\d{4}-(\d{2})-(\d{2})$/.exec(h.measured_on);return m?(+m[1])+"/"+(+m[2]):h.measured_on;}).join("　→　");
+}
+
+/* ---------------- イベント ---------------- */
+$("btnStart").addEventListener("click", function(){ IDX = 0; ANSWERS = {}; renderItem(); });
+$("btnSkipToResult").addEventListener("click", function(){ renderResult(LAST); });
+$("btnPrev").addEventListener("click", function(){
+  if(IDX === 0){ show("scIntro"); return; }
+  IDX--; renderItem();
+});
+$("btnNext").addEventListener("click", function(){
+  if(IDX === ITEMS.length-1){ renderConfirm(); return; }
+  IDX++; renderItem();
+});
+$("btnBackToTest").addEventListener("click", function(){ IDX = 0; renderItem(); });
+$("btnSubmit").addEventListener("click", async function(){
+  const b = this; b.disabled = true; b.textContent = "記録しています…";
+  try{
+    const values = [];
+    ITEMS.forEach(function(it){
+      const a = ANSWERS[it.code] || {};
+      Object.keys(a).forEach(function(side){ values.push({ item_code: it.code, side: side, score: a[side] }); });
+    });
+    const data = await api("flex_submit", { values: values });
+    renderResult(data);
+  }catch(e){
+    alert("記録できませんでした（" + e.message + "）。もう一度お試しください。");
+  }finally{ b.disabled = false; b.textContent = "記録する"; }
+});
+$("btnAgain").addEventListener("click", function(){ IDX = 0; ANSWERS = {}; renderItem(); });
+$("btnClose").addEventListener("click", function(){ if(liff.isInClient()) liff.closeWindow(); else show("scIntro"); });
+
+boot();
+})();
+</script>
+</body>
+</html>
