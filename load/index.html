@@ -235,7 +235,7 @@ function shift(d,n){ const t=new Date(d+"T00:00:00Z"); t.setUTCDate(t.getUTCDate
 /* ---------------- 起動 ---------------- */
 async function boot(){
   try{
-    if(!CFG.API_URL || CFG.API_URL.indexOf("<")===0) return fail("config.js の設定がまだです。");
+    if(!CFG.API_URL || CFG.API_URL.indexOf("<")>=0) return fail("config.js の設定がまだです。");
     await liff.init({ liffId: CFG.LIFF_ID_LOAD });
     if(!liff.isLoggedIn()){ liff.login(); return; }
     IDTOKEN = liff.getIDToken();

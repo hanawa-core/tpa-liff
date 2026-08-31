@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="theme-color" content="#F2EDE4">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TPA LINE 管理画面</title>
+<script src="../config.js"></script>
+<style>:root{
+  --paper:#F2EDE4; --paper2:#FBF8F2; --paper3:#EAE3D6;
+  --ink:#0D1B2A; --ink2:#4A5A6B; --ink3:#7E8B98;
+  --gold:#9A7A2C; --gold-b:#CDA756; --gold-l:rgba(154,122,44,.30);
+  --red:#A8402C; --amber:#8A6A12; --green:#2F6E52;
+  --grid:rgba(13,27,42,.075); --grid2:rgba(13,27,42,.045);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic",sans-serif;
+  font-size:15px; line-height:1.75; letter-spacing:.02em;
+  background-image:
+    linear-gradient(var(--grid2) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid2) 1px,transparent 1px),
+    linear-gradient(var(--grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:14px 14px,14px 14px,70px 70px,70px 70px;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.wrap{max-width:520px;margin:0 auto;padding:20px 18px 40px}
+.eyebrow{font-size:10px;letter-spacing:.32em;color:var(--gold);font-weight:800;margin:0 0 6px}
+h1{font-size:21px;line-height:1.5;margin:0 0 10px;font-weight:800}
+h2{font-size:17px;margin:0 0 8px;font-weight:800}
+p{margin:0 0 12px}
+.muted{color:var(--ink2);font-size:13px;line-height:1.7}
+.rule{height:1px;background:var(--gold-l);margin:18px 0}
+.card{background:var(--paper2);border:1px solid rgba(13,27,42,.14);border-radius:4px;padding:16px;margin:0 0 14px;
+  box-shadow:0 1px 0 rgba(13,27,42,.05)}
+.btn{display:block;width:100%;border:0;border-radius:4px;padding:15px;font-size:16px;font-weight:800;
+  font-family:inherit;cursor:pointer;background:var(--ink);color:var(--paper2);margin-top:6px;letter-spacing:.05em}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid rgba(13,27,42,.3)}
+.btn:disabled{opacity:.28}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.hide{display:none !important}
+.prog{display:flex;gap:5px;margin:0 0 18px}
+.prog i{flex:1;height:3px;background:rgba(13,27,42,.12);border-radius:2px}
+.prog i.on{background:var(--gold-b)}
+.num{font-size:34px;font-weight:900;color:var(--gold);line-height:1;font-family:Georgia,serif}
+.area{font-size:12px;color:var(--ink3);letter-spacing:.06em}
+.videoBtn{display:flex;align-items:center;gap:10px;justify-content:center;
+  border:1px solid var(--gold-l);border-radius:4px;padding:13px;color:var(--gold);
+  text-decoration:none;font-weight:800;font-size:14px;background:rgba(205,167,86,.14)}
+.sideLabel{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;margin:16px 0 8px}
+.sideLabel b{display:inline-flex;width:26px;height:26px;border-radius:50%;background:var(--ink);
+  color:var(--paper2);align-items:center;justify-content:center;font-size:13px}
+.opt{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;
+  background:var(--paper2);border:1px solid rgba(13,27,42,.16);border-radius:4px;
+  padding:11px 12px;margin:0 0 7px;color:var(--ink);font-family:inherit;font-size:13.5px;line-height:1.55;cursor:pointer}
+.opt .pt{flex:0 0 auto;font-weight:900;font-size:12px;padding:2px 8px;border-radius:3px;
+  background:rgba(13,27,42,.08);color:var(--ink2)}
+.opt[aria-pressed="true"]{border-color:var(--gold);background:rgba(205,167,86,.2);box-shadow:inset 0 0 0 1px var(--gold)}
+.opt[aria-pressed="true"] .pt{background:var(--gold);color:#fff}
+.opt.pain .pt{background:rgba(168,64,44,.12);color:var(--red)}
+.opt.pain[aria-pressed="true"]{border-color:var(--red);background:rgba(168,64,44,.12);box-shadow:inset 0 0 0 1px var(--red)}
+.opt.pain[aria-pressed="true"] .pt{background:var(--red);color:#fff}
+.total{text-align:center;padding:22px 0 6px}
+.total .big{font-size:62px;font-weight:900;color:var(--ink);line-height:1;font-family:Georgia,serif}
+.total .max{font-size:17px;color:var(--ink3);font-weight:700}
+.delta{display:inline-block;margin-top:10px;font-size:13px;font-weight:800;padding:4px 12px;border-radius:20px}
+.delta.up{background:rgba(47,110,82,.14);color:var(--green)}
+.delta.flat{background:rgba(13,27,42,.07);color:var(--ink2)}
+.delta.down{background:rgba(168,64,44,.13);color:var(--red)}
+table.res{width:100%;border-collapse:collapse;font-size:13.5px}
+table.res th{font-size:11px;color:var(--ink3);font-weight:800;padding:0 0 8px;text-align:center;letter-spacing:.08em}
+table.res th:first-child{text-align:left}
+table.res td{padding:9px 0;border-top:1px solid rgba(13,27,42,.12);text-align:center;vertical-align:middle}
+table.res td:first-child{text-align:left;font-weight:700}
+.chip{display:inline-block;min-width:30px;padding:2px 7px;border-radius:3px;font-weight:900;font-size:12px}
+.s3{background:rgba(47,110,82,.15);color:var(--green)}
+.s2{background:rgba(138,106,18,.16);color:var(--amber)}
+.s1{background:rgba(168,64,44,.14);color:var(--red)}
+.s0{background:var(--red);color:#fff}
+.arrow{font-size:11px;color:var(--ink3);margin-left:3px}
+.arrow.up{color:var(--green)}.arrow.down{color:var(--red)}
+.note{background:rgba(205,167,86,.14);border-left:3px solid var(--gold-b);padding:12px 14px;
+  border-radius:0 4px 4px 0;font-size:13.5px;line-height:1.8;margin:0 0 12px}
+.warn{background:rgba(168,64,44,.09);border-left:3px solid var(--red)}
+.foot{font-size:11.5px;color:var(--ink3);line-height:1.8;text-align:center;margin-top:26px}
+.brand{text-align:center;margin:26px 0 0}
+.brand div{font-size:9px;letter-spacing:.34em;color:var(--gold);font-weight:800}
+.spin{width:26px;height:26px;border:2px solid rgba(13,27,42,.18);border-top-color:var(--ink);
+  border-radius:50%;animation:sp .8s linear infinite;margin:60px auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+svg.hist{width:100%;height:120px;display:block}
+
+.wrap{max-width:1120px}
+.tabs{display:flex;border-bottom:1px solid rgba(13,27,42,.15);margin:0 0 18px;overflow-x:auto}
+.tabs button{flex:0 0 auto;background:none;border:0;border-bottom:2px solid transparent;padding:11px 18px;
+  font-family:inherit;font-size:14px;font-weight:800;color:var(--ink3);cursor:pointer;white-space:nowrap}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--gold-b)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:0 0 16px}
+.kpi{background:var(--paper2);border:1px solid rgba(13,27,42,.14);border-radius:4px;padding:14px}
+.kpi .k{font-size:10px;letter-spacing:.13em;color:var(--ink3);font-weight:800}
+.kpi .v{font-size:30px;font-weight:900;font-family:Georgia,serif;line-height:1.2}
+.kpi .u{font-size:11px;color:var(--ink3);font-weight:700}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+table.t th{font-size:11px;color:var(--ink3);font-weight:800;padding:0 8px 9px;text-align:left;letter-spacing:.06em;white-space:nowrap}
+table.t td{padding:11px 8px;border-top:1px solid rgba(13,27,42,.1);vertical-align:middle}
+table.t tr:hover td{background:rgba(205,167,86,.06)}
+.scroll{overflow-x:auto}
+.mini{font-size:12px;padding:6px 11px;border-radius:3px;border:1px solid rgba(13,27,42,.25);
+  background:var(--paper2);font-family:inherit;font-weight:700;color:var(--ink);cursor:pointer;white-space:nowrap}
+.mini.solid{background:var(--ink);color:var(--paper2);border-color:var(--ink)}
+.pill{display:inline-block;font-size:11px;font-weight:800;padding:3px 9px;border-radius:3px;white-space:nowrap}
+.pill.ok{background:rgba(47,110,82,.15);color:var(--green)}
+.pill.ng{background:rgba(168,64,44,.14);color:var(--red)}
+.pill.warn{background:rgba(138,106,18,.16);color:var(--amber)}
+.pill.gray{background:rgba(13,27,42,.08);color:var(--ink2)}
+.bar2{height:7px;background:rgba(13,27,42,.1);border-radius:3px;overflow:hidden;min-width:80px}
+.bar2 i{display:block;height:100%;background:var(--gold-b)}
+.gate{max-width:420px;margin:80px auto}
+.sub{font-size:11.5px;color:var(--ink3)}
+.modal{position:fixed;inset:0;background:rgba(13,27,42,.55);display:flex;align-items:flex-start;
+  justify-content:center;padding:40px 16px;overflow:auto;z-index:9}
+.modal .box{background:var(--paper);max-width:720px;width:100%;border-radius:5px;padding:22px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <section id="scGate" class="gate">
+    <p class="eyebrow" style="text-align:center">TENNIS PHYSICAL ARCHITECT ／ ADMIN</p>
+    <div class="card">
+      <p class="muted" style="margin:0 0 10px">管理キーを入力してください。</p>
+      <input type="text" id="key" placeholder="ADMIN_KEY" autocomplete="off"
+        style="width:100%;font-family:inherit;font-size:15px;padding:11px 12px;border:1px solid rgba(13,27,42,.2);border-radius:4px;background:var(--paper2)">
+      <button class="btn" id="btnEnter" style="margin-top:12px">開く</button>
+      <p class="muted" id="gateMsg" style="margin:10px 0 0;font-size:12.5px"></p>
+    </div>
+    <p class="foot">URLの末尾に <code>#key=…</code> を付けてブックマークすると、次回から自動で開きます。</p>
+  </section>
+
+  <section id="scApp" class="hide">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin:0 0 14px">
+      <p class="eyebrow" style="margin:0">TENNIS PHYSICAL ARCHITECT ／ ADMIN</p>
+      <button class="mini" id="btnReload">更新</button>
+    </div>
+    <div class="tabs">
+      <button data-t="ov" class="on">概要</button>
+      <button data-t="flex">柔軟性チェック</button>
+      <button data-t="load">練習負荷</button>
+      <button data-t="mem">友だち</button>
+    </div>
+    <div id="pane"></div>
+    <p class="foot" id="stamp"></p>
+  </section>
+
+</div>
+<div id="modal"></div>
+<script>
+(function(){
+"use strict";
+const CFG = window.TPA_CONFIG || {};
+const $ = (id) => document.getElementById(id);
+let KEY = "", D = null, TAB = "ov";
+
+const esc = (s) => String(s==null?"":s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function fmtD(s){ const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s||""); return m?((+m[2])+"/"+(+m[3])):"—"; }
+function fmtDY(s){ const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s||""); return m?(m[1]+"/"+(+m[2])+"/"+(+m[3])):"—"; }
+
+async function api(action, extra){
+  const res = await fetch(CFG.API_URL, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json", "Authorization":"Bearer "+CFG.ANON_KEY },
+    body: JSON.stringify(Object.assign({ action, adminKey: KEY }, extra||{}))
+  });
+  const j = await res.json().catch(()=>({error:"bad_response"}));
+  if(!res.ok || j.error) throw new Error(j.error || ("http_"+res.status));
+  return j;
+}
+
+async function enter(k){
+  KEY = k;
+  $("gateMsg").textContent = "確認しています…";
+  try{
+    D = await api("admin_overview");
+    $("scGate").classList.add("hide"); $("scApp").classList.remove("hide");
+    render();
+  }catch(e){
+    $("gateMsg").textContent = (e.message === "unauthorized")
+      ? "管理キーが違います。" : "つながりませんでした（"+e.message+"）。";
+  }
+}
+$("btnEnter").addEventListener("click", () => enter($("key").value.trim()));
+$("key").addEventListener("keydown", (e) => { if(e.key === "Enter") enter($("key").value.trim()); });
+$("btnReload").addEventListener("click", async () => { D = await api("admin_overview"); render(); });
+document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", function(){
+  document.querySelectorAll(".tabs button").forEach(x => x.classList.toggle("on", x === b));
+  TAB = b.dataset.t; render();
+}));
+
+function name(m){ return esc(m.note || m.display_name || "（名前なし）"); }
+
+function render(){
+  $("stamp").textContent = "最終取得： " + new Date().toLocaleString("ja-JP");
+  if(TAB === "ov")   return renderOv();
+  if(TAB === "flex") return renderFlex();
+  if(TAB === "load") return renderLoad();
+  if(TAB === "mem")  return renderMem();
+}
+
+/* ---------------- 概要 ---------------- */
+function renderOv(){
+  const ms = D.members || [];
+  const measured  = ms.filter(m => m.flex).length;
+  const recording = ms.filter(m => m.load && m.load.days_7 > 0).length;
+  const gaps  = ms.filter(m => m.flex && m.flex.max_side_gap >= 2);
+  const pains = ms.filter(m => m.flex && m.flex.pain_count > 0);
+  const spikes = ms.filter(m => m.week_ratio !== null && m.week_ratio >= 1.5);
+  const stopped = ms.filter(m => m.load && m.load.days_since >= 5);
+
+  let h = '<div class="kpis">' +
+    kpi("友だち", ms.length, "人") +
+    kpi("測定した人", measured, "人") +
+    kpi("今週 記録中", recording, "人") +
+    kpi("左右差 2点以上", gaps.length, "人") +
+    kpi("負荷が急増", spikes.length, "人") + '</div>';
+
+  h += flagCard("痛みが出た項目がある人", pains, m =>
+    '<span class="pill ng">'+m.flex.pain_count+'項目</span>　<span class="sub">'+fmtDY(m.flex.measured_on)+' の測定</span>',
+    "測定中に痛みが出た項目があった人です。声をかける優先度が一番高いところです。");
+
+  h += flagCard("左右差が大きい人", gaps, m =>
+    '<span class="pill warn">差 '+m.flex.max_side_gap+'点</span>　<span class="sub">'+m.flex.total_score+'/'+m.flex.max_score+'点</span>',
+    "テニスは片側に偏りやすい競技です。合計点が良くても、ここが開いていると不調の入り口になります。");
+
+  h += flagCard("今週の負荷が急に増えた人", spikes, m =>
+    '<span class="pill ng">'+Math.round(m.week_ratio*100)+'%</span>　<span class="sub">これまでの平均比</span>',
+    "これまでの週平均に対して1.5倍以上になっている人です。");
+
+  h += flagCard("記録が止まっている人", stopped, m =>
+    '<span class="pill gray">'+m.load.days_since+'日</span>　<span class="sub">最終 '+fmtDY(m.load.last_record_on)+'</span>',
+    "5日以上あいている人です。責める通知は出さない設計なので、ここで気づく用です。");
+
+  // 項目別の平均
+  const ia = D.item_avg || [];
+  if(ia.length){
+    const byItem = {};
+    ia.forEach(x => { (byItem[x.code] = byItem[x.code] || { name:x.name, ord:x.ord, sides:{} }).sides[x.side || "B"] = x; });
+    h += '<div class="card"><p class="eyebrow" style="margin-bottom:12px">項目別のいまの平均（全員）</p><div class="scroll"><table class="t">' +
+      '<tr><th>項目</th><th>左</th><th>右</th><th>1点以下の割合</th></tr>' +
+      Object.values(byItem).sort((a,b)=>a.ord-b.ord).map(function(it){
+        const L = it.sides.L, R = it.sides.R, B = it.sides.B;
+        const n = (L?L.n:0)+(R?R.n:0)+(B?B.n:0);
+        const low = (L?L.low_n:0)+(R?R.low_n:0)+(B?B.low_n:0);
+        const pct = n ? Math.round(low/n*100) : 0;
+        const cell = (x) => x ? '<b>'+Number(x.avg_score).toFixed(2)+'</b>' : '<span class="muted">—</span>';
+        return '<tr><td>'+esc(it.name)+'</td><td>'+(B?cell(B):cell(L))+'</td><td>'+(B?'<span class="muted">—</span>':cell(R))+'</td>' +
+          '<td><div style="display:flex;align-items:center;gap:8px"><div class="bar2" style="max-width:120px"><i style="width:'+pct+'%"></i></div><span class="sub">'+pct+'%</span></div></td></tr>';
+      }).join("") +
+      '</table></div><p class="muted" style="margin:10px 0 0;font-size:11.5px">' +
+      '3点満点。低い項目は、投稿や体験のときに触れる話題として使えます。</p></div>';
+  }
+  $("pane").innerHTML = h;
+}
+function kpi(k,v,u){ return '<div class="kpi"><div class="k">'+k+'</div><div class="v">'+v+' <span class="u">'+u+'</span></div></div>'; }
+function flagCard(title, rows, fmt, note){
+  if(!rows.length) return "";
+  return '<div class="card"><p class="eyebrow" style="margin-bottom:10px">'+title+'</p>' +
+    rows.map(m => '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-top:1px solid rgba(13,27,42,.1)">' +
+      '<b style="font-size:14px">'+name(m)+'</b><div>'+fmt(m)+'</div></div>').join("") +
+    '<p class="muted" style="margin:10px 0 0;font-size:11.5px">'+note+'</p></div>';
+}
+
+/* ---------------- 柔軟性チェック ---------------- */
+function renderFlex(){
+  const rows = (D.members||[]).filter(m => m.flex)
+    .sort((a,b) => (a.flex.measured_on < b.flex.measured_on ? 1 : -1));
+  $("pane").innerHTML = '<div class="card"><div class="scroll"><table class="t">' +
+    '<tr><th>選手</th><th>最新の測定</th><th>点数</th><th>前回差</th><th>制限が強い</th><th>左右差</th><th>回数</th><th></th></tr>' +
+    (rows.length ? rows.map(function(m){
+      const f = m.flex;
+      let d = '<span class="muted">—</span>';
+      if(f.prev_score !== null && f.prev_score !== undefined){
+        const df = f.total_score - f.prev_score;
+        d = df > 0 ? '<span class="pill ok">＋'+df+'</span>'
+          : df < 0 ? '<span class="pill ng">−'+Math.abs(df)+'</span>'
+          : '<span class="pill gray">±0</span>';
+      }
+      return '<tr><td><b>'+name(m)+'</b></td><td>'+fmtDY(f.measured_on)+'</td>' +
+        '<td><b style="font-family:Georgia,serif;font-size:16px">'+f.total_score+'</b> <span class="sub">/ '+f.max_score+'</span></td>' +
+        '<td>'+d+'</td>' +
+        '<td>'+(f.red_count>0?'<span class="pill ng">'+f.red_count+'項目</span>':'<span class="muted">0</span>')+
+        (f.pain_count>0?' <span class="pill ng">痛み'+f.pain_count+'</span>':'')+'</td>' +
+        '<td>'+(f.max_side_gap>=2?'<span class="pill warn">'+f.max_side_gap+'</span>':'<span class="muted">'+(f.max_side_gap??0)+'</span>')+'</td>' +
+        '<td>'+f.times+'</td>' +
+        '<td><button class="mini f-detail" data-u="'+esc(m.line_user_id)+'">推移</button></td></tr>';
+    }).join("") : '<tr><td colspan="8" class="muted">まだ測定がありません</td></tr>') +
+    '</table></div></div>';
+  $("pane").querySelectorAll(".f-detail").forEach(b => b.addEventListener("click", () => flexDetail(b.dataset.u)));
+}
+
+async function flexDetail(uid){
+  const m = (D.members||[]).find(x => x.line_user_id === uid);
+  openModal('<div class="spin"></div>');
+  try{
+    const r = await api("admin_flex_detail", { line_user_id: uid });
+    const items = D.items || [];
+    const scores = r.scores || [];
+    const byA = {};
+    (r.values||[]).forEach(v => { (byA[v.assessment_id] = byA[v.assessment_id] || {})[v.item_code+"_"+v.side] = v.score; });
+    let h = '<p class="eyebrow">FLEXIBILITY</p><h1 style="font-size:20px;margin:0 0 14px">'+name(m)+'</h1>' +
+      '<div class="scroll"><table class="t"><tr><th>項目</th>' +
+      scores.map(s => '<th colspan="2" style="text-align:center">'+fmtD(s.measured_on)+'</th>').join("") + '</tr>' +
+      '<tr><th></th>' + scores.map(() => '<th style="text-align:center">左</th><th style="text-align:center">右</th>').join("") + '</tr>' +
+      items.map(function(it){
+        return '<tr><td>'+esc(it.name)+'</td>' + scores.map(function(s){
+          const c = byA[s.assessment_id] || {};
+          const cell = (side) => {
+            const v = c[it.code+"_"+side];
+            if(v === undefined) return '<td style="text-align:center" class="muted">—</td>';
+            const cls = v>=3?"ok":v==2?"warn":"ng";
+            return '<td style="text-align:center"><span class="pill '+cls+'">'+v+'</span></td>';
+          };
+          return cell("L") + cell("R");
+        }).join("") + '</tr>';
+      }).join("") +
+      '<tr><td><b>合計</b></td>' + scores.map(s => '<td colspan="2" style="text-align:center"><b>'+s.total_score+'</b> <span class="sub">/'+s.max_score+'</span></td>').join("") + '</tr>' +
+      '</table></div><p class="muted" style="margin:12px 0 0;font-size:11.5px">新しい測定が左です。3＝クリア／2＝イエロー／1＝レッド／0＝痛みで中止</p>';
+    openModal(h);
+  }catch(e){ openModal('<p>読み込めませんでした（'+esc(e.message)+'）</p>'); }
+}
+
+/* ---------------- 練習負荷 ---------------- */
+function renderLoad(){
+  const rows = (D.members||[]).filter(m => m.load)
+    .sort((a,b) => (a.load.last_record_on < b.load.last_record_on ? 1 : -1));
+  $("pane").innerHTML = '<div class="card"><div class="scroll"><table class="t">' +
+    '<tr><th>選手</th><th>最終記録</th><th>直近7日</th><th>今週のTL</th><th>単調度</th><th>平均比</th><th>累計</th><th></th></tr>' +
+    (rows.length ? rows.map(function(m){
+      const l = m.load;
+      const ratio = m.week_ratio;
+      const rp = ratio === null ? '<span class="muted">—</span>'
+        : '<span class="pill '+(ratio>=1.5?"ng":ratio>=1.3?"warn":"gray")+'">'+Math.round(ratio*100)+'%</span>';
+      return '<tr><td><b>'+name(m)+'</b></td>' +
+        '<td>'+fmtDY(l.last_record_on)+(l.days_since>=5?' <span class="pill gray">'+l.days_since+'日</span>':'')+'</td>' +
+        '<td>'+l.days_7+' / 7</td>' +
+        '<td>'+(m.week_tl!==null?'<b style="font-family:Georgia,serif">'+Number(m.week_tl).toLocaleString()+'</b>':'<span class="muted">—</span>')+'</td>' +
+        '<td>'+(m.monotony!==null?Number(m.monotony).toFixed(2):'<span class="muted">—</span>')+'</td>' +
+        '<td>'+rp+'</td><td>'+l.total_records+'</td>' +
+        '<td><button class="mini l-detail" data-u="'+esc(m.line_user_id)+'">推移</button></td></tr>';
+    }).join("") : '<tr><td colspan="8" class="muted">まだ記録がありません</td></tr>') +
+    '</table></div><p class="muted" style="margin:12px 0 0;font-size:11.5px">' +
+    'TL＝sRPE-TL（練習時間×きつさ）。平均比が150%以上のときは、様子を見る目安です。</p></div>';
+  $("pane").querySelectorAll(".l-detail").forEach(b => b.addEventListener("click", () => loadDetail(b.dataset.u)));
+}
+
+async function loadDetail(uid){
+  const m = (D.members||[]).find(x => x.line_user_id === uid);
+  openModal('<div class="spin"></div>');
+  try{
+    const r = await api("admin_load_detail", { line_user_id: uid });
+    const recs = r.records || [];
+    const days = []; for(let i=41;i>=0;i--){ const t=new Date(r.today+"T00:00:00Z"); t.setUTCDate(t.getUTCDate()-i); days.push(t.toISOString().slice(0,10)); }
+    const map = {}; recs.forEach(x => { map[x.record_on] = Number(x.srpe_tl); });
+    const vals = days.map(d => map[d] || 0);
+    const max = Math.max(100, ...vals);
+    const W=640,H=150,PAD=14,bw=(W-PAD*2)/days.length;
+    let g = '<line x1="'+PAD+'" y1="'+(H-PAD)+'" x2="'+(W-PAD)+'" y2="'+(H-PAD)+'" stroke="rgba(13,27,42,.18)"/>';
+    vals.forEach(function(v,i){
+      const hh=(H-PAD*2)*(v/max), x=PAD+bw*i+0.8;
+      g += '<rect x="'+x.toFixed(1)+'" y="'+(H-PAD-hh).toFixed(1)+'" width="'+(bw-1.6).toFixed(1)+'" height="'+Math.max(v>0?1.5:0,hh).toFixed(1)+'" fill="#9A7A2C" rx="1"/>';
+    });
+    let h = '<p class="eyebrow">TRAINING LOAD</p><h1 style="font-size:20px;margin:0 0 6px">'+name(m)+'</h1>' +
+      '<p class="muted" style="font-size:12.5px">直近42日の日ごとの練習負荷</p>' +
+      '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;display:block;margin:0 0 16px">'+g+'</svg>' +
+      '<div class="scroll"><table class="t"><tr><th>週</th><th>sRPE-TL</th><th>単調度</th><th>緊張度</th><th>練習日</th></tr>' +
+      (r.weekly||[]).slice().reverse().slice(0,10).map(w =>
+        '<tr><td>'+fmtDY(w.week_start)+' の週</td><td><b>'+Number(w.weekly_tl).toLocaleString()+'</b></td>' +
+        '<td>'+(w.monotony!==null?Number(w.monotony).toFixed(2):'—')+'</td>' +
+        '<td>'+(w.strain!==null?Number(w.strain).toLocaleString():'—')+'</td><td>'+w.active_days+' 日</td></tr>').join("") +
+      '</table></div>';
+    openModal(h);
+  }catch(e){ openModal('<p>読み込めませんでした（'+esc(e.message)+'）</p>'); }
+}
+
+/* ---------------- 友だち ---------------- */
+function renderMem(){
+  const rows = D.members || [];
+  $("pane").innerHTML = '<div class="card"><div class="scroll"><table class="t">' +
+    '<tr><th>LINEの表示名</th><th>メモ（選手名など）</th><th>追加日</th><th>最終アクセス</th><th>測定</th><th>負荷記録</th><th></th></tr>' +
+    (rows.length ? rows.map(m =>
+      '<tr data-u="'+esc(m.line_user_id)+'"><td><b>'+esc(m.display_name||"（名前なし）")+'</b></td>' +
+      '<td><input type="text" class="f-note" style="font-family:inherit;font-size:13px;padding:6px 8px;min-width:180px;border:1px solid rgba(13,27,42,.2);border-radius:3px;background:var(--paper2)" value="'+esc(m.note||"")+'" placeholder="例）ゆいと（小4）"></td>' +
+      '<td>'+fmtDY(m.created_at)+'</td><td>'+fmtDY(m.last_seen_at)+'</td>' +
+      '<td>'+(m.flex?m.flex.times+' 回':'<span class="muted">—</span>')+'</td>' +
+      '<td>'+(m.load?m.load.total_records+' 日':'<span class="muted">—</span>')+'</td>' +
+      '<td><button class="mini solid f-save">保存</button></td></tr>').join("")
+      : '<tr><td colspan="7" class="muted">まだ友だちがいません</td></tr>') +
+    '</table></div><p class="muted" style="margin:12px 0 0;font-size:11.5px">' +
+    'LINEの表示名だけでは誰か分からないので、メモに選手名を入れておくと他の画面もその名前で出ます。</p></div>';
+
+  $("pane").querySelectorAll(".f-save").forEach(b => b.addEventListener("click", async function(){
+    const tr = b.closest("tr");
+    b.disabled = true; b.textContent = "保存中";
+    try{
+      await api("admin_member_update", { line_user_id: tr.dataset.u, note: tr.querySelector(".f-note").value });
+      const m = D.members.find(x => x.line_user_id === tr.dataset.u);
+      if(m) m.note = tr.querySelector(".f-note").value;
+      b.textContent = "保存済";
+      setTimeout(() => { b.disabled = false; b.textContent = "保存"; }, 1200);
+    }catch(e){ alert("保存できませんでした（"+e.message+"）"); b.disabled = false; b.textContent = "保存"; }
+  }));
+}
+
+/* ---------------- モーダル ---------------- */
+function openModal(html){
+  $("modal").innerHTML = '<div class="modal"><div class="box">' + html +
+    '<button class="btn ghost" style="margin-top:16px" id="mClose">とじる</button></div></div>';
+  const close = () => { $("modal").innerHTML = ""; };
+  document.getElementById("mClose").addEventListener("click", close);
+  $("modal").querySelector(".modal").addEventListener("click", (e) => { if(e.target.classList.contains("modal")) close(); });
+}
+
+(function(){
+  const m = /[#&]key=([^&]+)/.exec(location.hash || "");
+  if(m) enter(decodeURIComponent(m[1]));
+})();
+})();
+</script>
+</body>
+</html>
