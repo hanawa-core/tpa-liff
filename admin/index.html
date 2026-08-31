@@ -217,6 +217,7 @@ function renderOv(){
   const gaps  = ms.filter(m => m.flex && m.flex.max_side_gap >= 2);
   const pains = ms.filter(m => m.flex && m.flex.pain_count > 0);
   const spikes = ms.filter(m => m.week_ratio !== null && m.week_ratio >= 1.5);
+  const blocked = ms.filter(m => m.blocked).length;
   const stopped = ms.filter(m => m.load && m.load.days_since >= 5);
 
   let h = '<div class="kpis">' +
@@ -224,7 +225,8 @@ function renderOv(){
     kpi("測定した人", measured, "人") +
     kpi("今週 記録中", recording, "人") +
     kpi("左右差 2点以上", gaps.length, "人") +
-    kpi("負荷が急増", spikes.length, "人") + '</div>';
+    kpi("負荷が急増", spikes.length, "人") +
+    kpi("ブロック中", blocked, "人") + '</div>';
 
   h += flagCard("痛みが出た項目がある人", pains, m =>
     '<span class="pill ng">'+m.flex.pain_count+'項目</span>　<span class="sub">'+fmtDY(m.flex.measured_on)+' の測定</span>',
@@ -387,18 +389,43 @@ async function loadDetail(uid){
 /* ---------------- 友だち ---------------- */
 function renderMem(){
   const rows = D.members || [];
-  $("pane").innerHTML = '<div class="card"><div class="scroll"><table class="t">' +
-    '<tr><th>LINEの表示名</th><th>メモ（選手名など）</th><th>追加日</th><th>最終アクセス</th><th>測定</th><th>負荷記録</th><th></th></tr>' +
+  const checked = rows.map(m => m.blocked_checked_at).filter(Boolean).sort().pop();
+  $("pane").innerHTML =
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin:0 0 12px">' +
+      '<span class="sub">'+(checked ? "ブロック状態の最終確認： "+new Date(checked).toLocaleString("ja-JP") : "ブロック状態はまだ確認していません")+'</span>' +
+      '<button class="mini solid" id="btnCheck">ブロックを確認する</button></div>' +
+    '<div class="card"><div class="scroll"><table class="t">' +
+    '<tr><th>LINEの表示名</th><th>メモ（選手名など）</th><th>状態</th><th>登録日</th><th>最終アクセス</th><th>測定</th><th>負荷記録</th><th></th></tr>' +
     (rows.length ? rows.map(m =>
       '<tr data-u="'+esc(m.line_user_id)+'"><td><b>'+esc(m.display_name||"（名前なし）")+'</b></td>' +
-      '<td><input type="text" class="f-note" style="font-family:inherit;font-size:13px;padding:6px 8px;min-width:180px;border:1px solid rgba(13,27,42,.2);border-radius:3px;background:var(--paper2)" value="'+esc(m.note||"")+'" placeholder="例）ゆいと（小4）"></td>' +
-      '<td>'+fmtDY(m.created_at)+'</td><td>'+fmtDY(m.last_seen_at)+'</td>' +
+      '<td><input type="text" class="f-note" style="font-family:inherit;font-size:13px;padding:6px 8px;min-width:170px;border:1px solid rgba(13,27,42,.2);border-radius:3px;background:var(--paper2)" value="'+esc(m.note||"")+'" placeholder="例）ゆいと（小4）"></td>' +
+      '<td>'+(m.blocked
+          ? '<span class="pill ng">ブロック中</span>'+(m.unfollowed_at?'<div class="sub">'+fmtDY(m.unfollowed_at)+'</div>':'')
+          : '<span class="pill ok">利用中</span>')+'</td>' +
+      '<td>'+fmtDY(m.followed_at || m.created_at)+'</td><td>'+fmtDY(m.last_seen_at)+'</td>' +
       '<td>'+(m.flex?m.flex.times+' 回':'<span class="muted">—</span>')+'</td>' +
       '<td>'+(m.load?m.load.total_records+' 日':'<span class="muted">—</span>')+'</td>' +
       '<td><button class="mini solid f-save">保存</button></td></tr>').join("")
-      : '<tr><td colspan="7" class="muted">まだ友だちがいません</td></tr>') +
+      : '<tr><td colspan="8" class="muted">まだ友だちがいません</td></tr>') +
     '</table></div><p class="muted" style="margin:12px 0 0;font-size:11.5px">' +
-    'LINEの表示名だけでは誰か分からないので、メモに選手名を入れておくと他の画面もその名前で出ます。</p></div>';
+    'LINEの表示名だけでは誰か分からないので、メモに選手名を入れておくと他の画面もその名前で出ます。<br>' +
+    '登録日は、Webhookを付けたあとに追加された方は正確な友だち追加日、それ以前の方は初回アクセス日です。' +
+    'ブロックは、相手がブロックした瞬間にも記録されますが、取りこぼしがないか確認したいときは上のボタンを押してください。</p></div>';
+
+  $("btnCheck").addEventListener("click", async function(){
+    this.disabled = true; this.textContent = "確認中…";
+    try{
+      const r = await api("admin_check_blocks");
+      D = await api("admin_overview");
+      render();
+      alert(r.checked + "人を確認しました。\n利用中 " + r.active + "人 ／ ブロック中 " + r.blocked + "人");
+    }catch(e){
+      alert(e.message === "no_channel_token"
+        ? "チャネルアクセストークンが未設定です。Secretsに LINE_CHANNEL_ACCESS_TOKEN を入れてください。"
+        : "確認できませんでした（"+e.message+"）");
+      this.disabled = false; this.textContent = "ブロックを確認する";
+    }
+  });
 
   $("pane").querySelectorAll(".f-save").forEach(b => b.addEventListener("click", async function(){
     const tr = b.closest("tr");
