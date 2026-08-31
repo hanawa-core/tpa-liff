@@ -104,6 +104,35 @@ table.res td:first-child{text-align:left;font-weight:700}
 .logo{display:block;width:196px;max-width:56%;height:auto;margin:2px auto 20px}
 .logo-sm{display:block;width:150px;height:auto;margin:0 auto;opacity:.72}
 svg.hist{width:100%;height:120px;display:block}
+/* --- 項目画面 --- */
+.ihead{text-align:center;margin:0 0 16px}
+.ihead .no{display:inline-flex;width:44px;height:44px;border-radius:50%;background:var(--ink);color:var(--paper2);
+  align-items:center;justify-content:center;font-family:Georgia,serif;font-size:20px;font-weight:900;margin:0 0 10px}
+.ihead .area{font-size:12px;color:var(--gold);font-weight:800;letter-spacing:.14em;margin:0 0 4px}
+.ihead h1{font-size:27px;margin:0;text-align:center}
+.ihead .rule{width:64px;height:3px;background:var(--gold-b);margin:12px auto 0;border-radius:2px}
+.howto{background:rgba(205,167,86,.14);border:1px solid var(--gold-l);border-radius:4px;padding:13px 15px;margin:0 0 12px}
+.howto p{margin:0 0 5px;font-size:13.5px;line-height:1.7;display:flex;gap:8px}
+.howto p:last-child{margin:0}
+.howto b.mk{color:var(--gold);flex:0 0 auto}
+details.why{background:var(--paper2);border:1px solid rgba(13,27,42,.14);border-radius:4px;margin:0 0 16px}
+details.why summary{cursor:pointer;padding:12px 15px;font-size:13.5px;font-weight:800;list-style:none}
+details.why summary::-webkit-details-marker{display:none}
+details.why summary::after{content:"＋";float:right;color:var(--gold);font-weight:900}
+details.why[open] summary::after{content:"−"}
+details.why .body{padding:0 15px 14px}
+details.why .body dt{font-size:11px;letter-spacing:.1em;color:var(--gold);font-weight:800;margin:10px 0 3px}
+details.why .body dd{margin:0;font-size:13px;line-height:1.75;color:var(--ink2)}
+.scoreHead{text-align:center;font-size:12px;letter-spacing:.16em;color:var(--gold);font-weight:800;margin:20px 0 10px}
+/* --- シェア画像 --- */
+#shareBox{margin-top:8px}
+#shareBox canvas{width:100%;height:auto;display:block;border:1px solid rgba(13,27,42,.16);border-radius:4px}
+.togg{display:flex;align-items:center;gap:10px;justify-content:center;font-size:13.5px;font-weight:700;
+  padding:12px;background:var(--paper2);border:1px solid rgba(13,27,42,.16);border-radius:4px;margin:12px 0;cursor:pointer;width:100%;
+  font-family:inherit;color:var(--ink)}
+.togg i{width:20px;height:20px;border:1.6px solid rgba(13,27,42,.32);border-radius:3px;display:flex;
+  align-items:center;justify-content:center;font-style:normal;font-size:13px;color:transparent}
+.togg[aria-pressed="true"] i{background:var(--gold);border-color:var(--gold);color:#fff}
 </style>
 </head>
 <body>
@@ -147,19 +176,27 @@ svg.hist{width:100%;height:120px;display:block}
   <!-- ============ 測定 ============ -->
   <section id="scTest" class="hide">
     <div class="prog" id="prog"></div>
-    <div style="display:flex;align-items:flex-end;gap:12px;margin-bottom:4px">
-      <div class="num" id="tNum">1</div>
-      <div style="flex:1">
-        <div class="area" id="tArea"></div>
-        <h1 style="margin:0;font-size:23px" id="tName"></h1>
-      </div>
-    </div>
-    <div class="card" style="padding:13px 15px">
-      <p class="muted" style="margin:0 0 7px" id="tRole"></p>
-      <p class="muted" style="margin:0;color:var(--gold);font-size:12.5px" id="tSign"></p>
+    <div class="ihead">
+      <div class="no" id="tNum">1</div>
+      <div class="area" id="tArea"></div>
+      <h1 id="tName"></h1>
+      <div class="rule"></div>
     </div>
     <div id="tVideoBox"></div>
     <p class="vcap" id="tVideoCap">タップするとこの画面で再生します</p>
+
+    <div class="howto" id="tHowto"></div>
+
+    <details class="why">
+      <summary>この項目が、テニスのどこに効くか</summary>
+      <div class="body">
+        <dt>役割</dt><dd id="tRole"></dd>
+        <dt>可動域が足りないと</dt><dd id="tLimit"></dd>
+        <dt>試合中の目安サイン</dt><dd id="tSign"></dd>
+      </div>
+    </details>
+
+    <p class="scoreHead">SCORING　0〜3点で採点</p>
     <div id="sides"></div>
     <div class="row" style="margin-top:20px">
       <button class="btn ghost" id="btnPrev">もどる</button>
@@ -201,6 +238,23 @@ svg.hist{width:100%;height:120px;display:block}
       次は<b>2〜3ヶ月後</b>にもう一度測って、変化を見てみましょう。<br>
       結果が気になる方は、プロフィールのリンクからご覧ください。
     </div>
+    <button class="btn" id="btnShare">結果を画像にする</button>
+
+    <section id="shareBox" class="hide">
+      <div class="card" style="padding:14px">
+        <canvas id="shareCanvas" width="1080" height="1350"></canvas>
+        <button type="button" class="togg" id="btnHideName" aria-pressed="false">
+          <i>✓</i><span>名前を伏せる</span>
+        </button>
+        <div class="note" style="margin:0">
+          <b>保存のしかた</b><br>
+          上の画像を<b>長押し</b>して「画像を保存」を選んでください。<br>
+          そのままInstagramのストーリーズや投稿に使えます。
+        </div>
+        <a class="btn ghost" id="btnDl" download="tpa-flexibility.png" style="text-decoration:none;text-align:center">画像を保存する</a>
+      </div>
+    </section>
+
     <button class="btn ghost" id="btnAgain">もう一度測る</button>
     <button class="btn ghost" id="btnClose">とじる</button>
     <div class="brand"><img class="logo-sm" src="../assets/tpa_logo_w720.png" alt="TENNIS PHYSICAL ARCHITECT"></div>
@@ -266,7 +320,7 @@ function renderProgress(){
   $("prog").innerHTML = ITEMS.map((_,i)=>'<i class="'+(i<=IDX?"on":"")+'"></i>').join("");
 }
 function sideList(item){
-  return item.has_side === false ? [["B","両方"]] : [["L","左"],["R","右"]];
+  return item.has_side === false ? [["B","両脚"]] : [["L","左"],["R","右"]];
 }
 function renderItem(){
   const it = ITEMS[IDX];
@@ -274,14 +328,19 @@ function renderItem(){
   $("tNum").textContent  = String(IDX+1);
   $("tArea").textContent = it.area;
   $("tName").textContent = it.name;
-  $("tRole").textContent = it.role_text;
-  $("tSign").textContent = "試合中の目安サイン： " + it.sign_text;
+  $("tRole").textContent  = it.role_text || "";
+  $("tLimit").textContent = it.limit_text || "";
+  $("tSign").textContent  = it.sign_text || "";
+  $("tHowto").innerHTML =
+    '<p><b class="mk">・</b><span>' + (it.how_to || "反動をつけず、痛みのない範囲で。左右差があれば、硬い側を丁寧に。").replace("。左右", "。</span></p><p><b class=\"mk\">・</b><span>左右") + '</span></p>' +
+    '<p><b class="mk">・</b><span>痛みが出たら、そこで中止してください（0点）。</span></p>';
   renderPlayer(it.video_url, it.name);
 
   const c = it.criteria || {};
   $("sides").innerHTML = sideList(it).map(function(s){
     const side = s[0], label = s[1];
-    return '<div class="sideLabel"><b>'+label+'</b><span>'+label+'側を採点</span></div>' +
+    const cap = (side === "B") ? "両脚そろえて採点します" : label + "側を採点します";
+    return '<div class="sideLabel"><b>'+label+'</b><span>'+cap+'</span></div>' +
       [3,2,1,0].map(function(pt){
         const sel = (ANSWERS[it.code] && ANSWERS[it.code][side] === pt) ? "true" : "false";
         return '<button type="button" class="opt'+(pt===0?" pain":"")+'" aria-pressed="'+sel+'"'+
@@ -416,6 +475,14 @@ function renderResult(data){
   if(hist.length >= 2){ $("histBox").classList.remove("hide"); drawHist(hist); }
   else $("histBox").classList.add("hide");
 
+  // シェア画像用
+  const lg = new Image();
+  lg.src = "../assets/tpa_logo_w720.png";
+  SHARE = { data: data, name: DISPLAY_NAME, logo: lg };
+  lg.onload = function(){ if(!$("shareBox").classList.contains("hide")) drawShare(); };
+  $("shareBox").classList.add("hide");
+  $("btnShare").textContent = "結果を画像にする";
+
   show("scResult");
 }
 
@@ -479,6 +546,163 @@ function drawHist(hist){
   $("hist").innerHTML = g;
   $("histLabel").textContent = hist.map(h=>{const m=/^\d{4}-(\d{2})-(\d{2})$/.exec(h.measured_on);return m?(+m[1])+"/"+(+m[2]):h.measured_on;}).join("　→　");
 }
+
+
+/* ---------------- 結果のシェア画像 ---------------- */
+let SHARE = null, HIDE_NAME = false;
+
+function itemAvg(map, code, item){
+  const c = map[code] || {};
+  const vals = [];
+  ["L","R","B"].forEach(sd => { if(typeof c[sd] === "number") vals.push(c[sd]); });
+  if(!vals.length) return null;
+  return vals.reduce((a,b)=>a+b,0) / vals.length;
+}
+
+function drawShare(){
+  if(!SHARE) return;
+  const { data } = SHARE;
+  const cv = $("shareCanvas"), g = cv.getContext("2d");
+  const W = cv.width, H = cv.height;
+  const PAPER="#F2EDE4", PAPER2="#FBF8F2", INK="#0D1B2A", INK2="#4A5A6B", INK3="#7E8B98",
+        GOLD="#9A7A2C", GOLDB="#CDA756";
+  const JP = '"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic",sans-serif';
+
+  g.fillStyle = PAPER; g.fillRect(0,0,W,H);
+  // ブループリントのグリッド
+  g.strokeStyle = "rgba(13,27,42,.06)"; g.lineWidth = 1;
+  for(let x=0;x<W;x+=30){ g.beginPath(); g.moveTo(x,0); g.lineTo(x,H); g.stroke(); }
+  for(let y=0;y<H;y+=30){ g.beginPath(); g.moveTo(0,y); g.lineTo(W,y); g.stroke(); }
+  g.strokeStyle = "rgba(13,27,42,.11)";
+  for(let x=0;x<W;x+=150){ g.beginPath(); g.moveTo(x,0); g.lineTo(x,H); g.stroke(); }
+  for(let y=0;y<H;y+=150){ g.beginPath(); g.moveTo(0,y); g.lineTo(W,y); g.stroke(); }
+  // 図面枠
+  g.strokeStyle = "rgba(13,27,42,.35)"; g.lineWidth = 2;
+  g.strokeRect(40,40,W-80,H-80);
+  g.strokeStyle = "rgba(13,27,42,.55)"; g.lineWidth = 4;
+  [[40,40,1,1],[W-40,40,-1,1],[40,H-40,1,-1],[W-40,H-40,-1,-1]].forEach(function(c){
+    g.beginPath(); g.moveTo(c[0],c[1]); g.lineTo(c[0]+c[2]*54,c[1]); g.stroke();
+    g.beginPath(); g.moveTo(c[0],c[1]); g.lineTo(c[0],c[1]+c[3]*54); g.stroke();
+  });
+
+  const cx = W/2;
+  // ロゴ
+  if(SHARE.logo && SHARE.logo.complete && SHARE.logo.naturalWidth){
+    const lw = 540, lh = lw * SHARE.logo.naturalHeight / SHARE.logo.naturalWidth;
+    g.drawImage(SHARE.logo, cx-lw/2, 70, lw, lh);
+  }
+
+  g.textAlign = "center";
+  g.fillStyle = INK; g.font = "800 36px " + JP;
+  g.fillText("ジュニアテニスに、フィジカルを。", cx, 398);
+  g.strokeStyle = GOLDB; g.lineWidth = 4;
+  g.beginPath(); g.moveTo(cx-110, 428); g.lineTo(cx+110, 428); g.stroke();
+
+  // 名前と日付
+  g.fillStyle = INK2; g.font = "700 26px " + JP;
+  const nm = HIDE_NAME ? "" : (SHARE.name || "");
+  const dt = (data.latest.measured_on||"").replace(/^(\d{4})-(\d{2})-(\d{2})$/, "$1.$2.$3");
+  g.fillText(nm ? (nm + "　/　" + dt) : dt, cx, 476);
+
+  // 合計点（数字と /満点 を1ブロックとして中央に置く）
+  g.fillStyle = GOLD; g.font = "800 20px " + JP;
+  g.fillText("F L E X I B I L I T Y   S C O R E", cx, 528);
+  const sTxt = String(data.latest.total_score), mTxt = " / " + data.latest.max_score;
+  g.font = "900 118px Georgia,serif"; const sW = g.measureText(sTxt).width;
+  g.font = "700 34px " + JP;          const mW = g.measureText(mTxt).width;
+  const startX = cx - (sW + mW) / 2;
+  g.textAlign = "left";
+  g.fillStyle = INK;  g.font = "900 118px Georgia,serif"; g.fillText(sTxt, startX, 622);
+  g.fillStyle = INK3; g.font = "700 34px " + JP;          g.fillText(mTxt, startX + sW, 622);
+  g.textAlign = "center";
+
+  // 前回比
+  if(data.previous){
+    const df = data.latest.total_score - data.previous.total_score;
+    const txt = df > 0 ? "前回から ＋" + df + "点" : df < 0 ? "前回から −" + Math.abs(df) + "点" : "前回と同じ";
+    g.fillStyle = df > 0 ? "#2F6E52" : df < 0 ? "#A8402C" : INK3;
+    g.font = "800 25px " + JP;
+    g.fillText(txt, cx, 668);
+  }
+
+  // 凡例（レーダーの上に置いて、軸ラベルとぶつからないようにする）
+  if(data.previous){
+    g.font = "700 21px " + JP;
+    g.fillStyle = GOLD; g.fillText("● 今回", cx-78, 708);
+    g.fillStyle = INK3; g.fillText("--- 前回", cx+72, 708);
+  }
+
+  // レーダーチャート
+  const items = data.items || [];
+  const cur = byItem(data.latest);
+  const prv = data.previous ? byItem(data.previous) : null;
+  const N = items.length, R = 195, ccx = cx, ccy = 990, MAX = 3;
+  const ang = (i) => -Math.PI/2 + i * 2*Math.PI/N;
+  const pt  = (i,v) => [ccx + Math.cos(ang(i))*R*(v/MAX), ccy + Math.sin(ang(i))*R*(v/MAX)];
+
+  for(let r=1;r<=3;r++){
+    g.strokeStyle = r===3 ? "rgba(13,27,42,.28)" : "rgba(13,27,42,.14)";
+    g.lineWidth = r===3 ? 2 : 1;
+    g.beginPath();
+    for(let i=0;i<N;i++){ const p = pt(i,r); i? g.lineTo(p[0],p[1]) : g.moveTo(p[0],p[1]); }
+    g.closePath(); g.stroke();
+  }
+  g.strokeStyle = "rgba(13,27,42,.16)"; g.lineWidth = 1;
+  for(let i=0;i<N;i++){ const p = pt(i,3); g.beginPath(); g.moveTo(ccx,ccy); g.lineTo(p[0],p[1]); g.stroke(); }
+
+  function poly(map, stroke, fill, dash){
+    const vs = items.map((it,i) => { const v = itemAvg(map, it.code, it); return [i, v===null?0:v]; });
+    g.setLineDash(dash||[]);
+    g.beginPath();
+    vs.forEach(function(v,i){ const p = pt(v[0], v[1]); i? g.lineTo(p[0],p[1]) : g.moveTo(p[0],p[1]); });
+    g.closePath();
+    if(fill){ g.fillStyle = fill; g.fill(); }
+    g.strokeStyle = stroke; g.lineWidth = 3.5; g.stroke();
+    g.setLineDash([]);
+    return vs;
+  }
+  if(prv) poly(prv, "rgba(13,27,42,.42)", null, [7,6]);
+  const vs = poly(cur, GOLD, "rgba(205,167,86,.30)");
+  vs.forEach(function(v){
+    const p = pt(v[0], v[1]);
+    g.fillStyle = PAPER2; g.beginPath(); g.arc(p[0],p[1],7,0,7); g.fill();
+    g.strokeStyle = GOLD; g.lineWidth = 3.5; g.stroke();
+  });
+
+  // 軸ラベル
+  g.font = "800 23px " + JP; g.fillStyle = INK;
+  items.forEach(function(it,i){
+    const a = ang(i), x = ccx + Math.cos(a)*(R+46), y = ccy + Math.sin(a)*(R+46);
+    g.textAlign = Math.abs(Math.cos(a)) < 0.3 ? "center" : (Math.cos(a) > 0 ? "left" : "right");
+    g.textBaseline = "middle";
+    g.fillText(it.name, x, y);
+  });
+  g.textBaseline = "alphabetic"; g.textAlign = "center";
+
+  // フッター
+  g.fillStyle = INK; g.font = "800 25px " + JP;
+  g.fillText("@tennis_physical_architect", cx, 1268);
+  g.fillStyle = INK3; g.font = "700 21px " + JP;
+  g.fillText("ジュニアテニス専門 フィジカルアカデミー", cx, 1302);
+
+  try{ $("btnDl").href = cv.toDataURL("image/png"); }catch(e){}
+}
+
+$("btnShare").addEventListener("click", function(){
+  const box = $("shareBox");
+  const opening = box.classList.contains("hide");
+  box.classList.toggle("hide", !opening);
+  this.textContent = opening ? "画像を閉じる" : "結果を画像にする";
+  if(opening){
+    drawShare();
+    box.scrollIntoView({ behavior:"smooth", block:"start" });
+  }
+});
+$("btnHideName").addEventListener("click", function(){
+  HIDE_NAME = !HIDE_NAME;
+  this.setAttribute("aria-pressed", String(HIDE_NAME));
+  drawShare();
+});
 
 /* ---------------- イベント ---------------- */
 $("btnStart").addEventListener("click", function(){ IDX = 0; ANSWERS = {}; renderItem(); });
