@@ -163,6 +163,18 @@ svg.g{width:100%;display:block}
       <div class="w">練習負荷記録</div>
     </div>
 
+    <!-- TPAチャレンジへの入口（開催中・予定のあるときだけ出す） -->
+    <a id="chLink" class="card hide" href="challenge.html"
+       style="display:block;text-decoration:none;color:inherit;border-color:var(--gold-l);background:rgba(205,167,86,.12)">
+      <p class="label" style="margin:0 0 4px">TPA CHALLENGE　みんなで</p>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <b id="chTitle" style="font-size:15px;line-height:1.5"></b>
+        <span style="font-weight:800;color:var(--gold);white-space:nowrap">参加する ›</span>
+      </div>
+      <div style="height:8px;background:rgba(13,27,42,.1);border-radius:3px;overflow:hidden;margin-top:10px"><i id="chFill" style="display:block;height:100%;background:var(--gold-b);width:0;transition:width .9s"></i></div>
+      <p class="muted" id="chSub" style="margin:6px 0 0;font-size:12px"></p>
+    </a>
+
     <div class="tabs">
       <button id="tabIn" class="on">きょうを記録</button>
       <button id="tabSee">これまで</button>
@@ -244,6 +256,7 @@ async function boot(){
     DATA = await api("load_summary");
     render();
     show("scMain");
+    challengeCard();
   }catch(e){ fail("通信に失敗しました（"+e.message+"）。時間をおいて開き直してください。"); }
 }
 
@@ -411,6 +424,30 @@ function historyList(recs){
         '<div>'+(x.duration_min===0 ? '<span class="muted">休み</span>' :
           '<span class="muted">'+x.duration_min+'分 × '+x.rpe+'</span>　<span class="tl">'+x.srpe_tl+'</span>')+'</div></div>';
     }).join("") + '</div></div>';
+}
+
+/* ---------------- TPAチャレンジの入口 ---------------- */
+// 練習負荷の画面が先に出るよう、あとから読む。読めなくても練習負荷には影響させない
+async function challengeCard(){
+  if(!CFG.CHALLENGE_API_URL) return;
+  try{
+    const res = await fetch(CFG.CHALLENGE_API_URL, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json", "Authorization":"Bearer "+CFG.ANON_KEY },
+      body: JSON.stringify({ action:"challenge_get", idToken: IDTOKEN, displayName: NAME })
+    });
+    const j = await res.json();
+    const c = j && j.challenge;
+    if(!c || c.status === "ended") return;
+    const total = (j.all && j.all.total) || 0;
+    const pct = c.goal > 0 ? Math.min(100, Math.floor(total / c.goal * 100)) : 0;
+    $("chTitle").textContent = c.title;
+    $("chFill").style.width = pct + "%";
+    $("chSub").textContent = c.status === "upcoming"
+      ? fmtD(c.starts_on) + "から始まります"
+      : "みんなで " + total.toLocaleString() + " ／ " + Number(c.goal).toLocaleString() + " " + (c.unit||"回") + "（" + pct + "%）";
+    $("chLink").classList.remove("hide");
+  }catch(e){ /* 出さないだけ */ }
 }
 
 /* ---------------- 描画 ---------------- */
