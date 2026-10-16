@@ -150,6 +150,7 @@ table.t tr:hover td{background:rgba(205,167,86,.06)}
       <button data-t="flex">柔軟性チェック</button>
       <button data-t="load">練習負荷</button>
       <button data-t="mem">友だち</button>
+      <button data-t="ch">TPAチャレンジ</button>
     </div>
     <div id="pane"></div>
     <p class="foot" id="stamp"></p>
@@ -207,6 +208,7 @@ function render(){
   if(TAB === "flex") return renderFlex();
   if(TAB === "load") return renderLoad();
   if(TAB === "mem")  return renderMem();
+  if(TAB === "ch")   return renderCh();
 }
 
 /* ---------------- 概要 ---------------- */
@@ -438,6 +440,108 @@ function renderMem(){
       setTimeout(() => { b.disabled = false; b.textContent = "保存"; }, 1200);
     }catch(e){ alert("保存できませんでした（"+e.message+"）"); b.disabled = false; b.textContent = "保存"; }
   }));
+}
+
+/* ---------------- TPAチャレンジ（みんなで目指す協力型） ---------------- */
+// 別の Edge Function（tpa-challenge）を呼ぶ。管理キーは同じ
+async function capi(action, extra){
+  const res = await fetch(CFG.CHALLENGE_API_URL, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json", "Authorization":"Bearer "+CFG.ANON_KEY },
+    body: JSON.stringify(Object.assign({ action, adminKey: KEY }, extra||{}))
+  });
+  const j = await res.json().catch(()=>({error:"bad_response"}));
+  if(!res.ok || j.error) throw new Error(j.error || ("http_"+res.status));
+  return j;
+}
+const LIFF_CH = "https://liff.line.me/" + (CFG.LIFF_ID_LOAD || "") + "/challenge.html";
+function chState(c, today){ return today < c.starts_on ? ["予定","gray"] : today > c.ends_on ? ["終了","gray"] : ["開催中","ok"]; }
+
+async function renderCh(){
+  if(!CFG.CHALLENGE_API_URL){ $("pane").innerHTML = '<div class="card"><p class="muted">config.js に CHALLENGE_API_URL がありません。</p></div>'; return; }
+  $("pane").innerHTML = '<div class="spin"></div>';
+  let r;
+  try{ r = await capi("admin_challenge_list"); }
+  catch(e){ $("pane").innerHTML = '<div class="card"><p>読み込めませんでした（'+esc(e.message)+'）</p><p class="muted" style="font-size:12px">Edge Function「tpa-challenge」とテーブルが入っているか確認してください。</p></div>'; return; }
+  const cs = r.challenges || [];
+  let h = '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 12px">' +
+    '<span class="sub">選手の画面：<a href="'+esc(LIFF_CH)+'" target="_blank" rel="noopener">'+esc(LIFF_CH)+'</a></span>' +
+    '<button class="mini solid" id="chNew">＋ チャレンジを作る</button></div>';
+  h += cs.length ? cs.map(function(c){
+    const st = chState(c, r.today);
+    const pct = c.goal > 0 ? Math.min(100, Math.floor(c.total / c.goal * 100)) : 0;
+    return '<div class="card"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">' +
+      '<b style="font-size:16px">'+esc(c.title)+'</b><span class="pill '+st[1]+'">'+st[0]+'</span></div>' +
+      '<p class="sub" style="margin:2px 0 10px">'+fmtDY(c.starts_on)+' 〜 '+fmtDY(c.ends_on)+'　／　'+esc(c.exercise)+'　1人1日 '+c.daily_cap+esc(c.unit)+'まで</p>' +
+      '<div style="display:flex;align-items:center;gap:10px"><div class="bar2" style="flex:1"><i style="width:'+pct+'%"></i></div>' +
+      '<b style="font-family:Georgia,serif">'+Number(c.total).toLocaleString()+'</b><span class="sub">/ '+Number(c.goal).toLocaleString()+esc(c.unit)+'（'+pct+'%）</span></div>' +
+      '<p class="sub" style="margin:8px 0 10px">参加 '+c.people+' 人</p>' +
+      '<div style="display:flex;gap:8px"><button class="mini c-detail" data-id="'+esc(c.id)+'">参加した人</button>' +
+      '<button class="mini c-edit" data-id="'+esc(c.id)+'">直す</button></div></div>';
+  }).join("") : '<div class="card"><p class="muted" style="margin:0">まだチャレンジがありません。「＋ チャレンジを作る」から始めてください。</p></div>';
+  h += '<p class="muted" style="font-size:11.5px">選手の画面には、みんなの合計と本人の記録だけが出ます（順位や他の人の回数は出ません）。' +
+    '期間が重なると、開始日が新しいほうが選手に出ます。</p>';
+  $("pane").innerHTML = h;
+  $("chNew").addEventListener("click", () => chForm(null));
+  $("pane").querySelectorAll(".c-edit").forEach(b => b.addEventListener("click", () => chForm(cs.find(c => c.id === b.dataset.id))));
+  $("pane").querySelectorAll(".c-detail").forEach(b => b.addEventListener("click", () => chDetail(cs.find(c => c.id === b.dataset.id))));
+}
+
+function chForm(c){
+  const t = new Date(Date.now() + 9*3600e3);
+  const first = new Date(Date.UTC(t.getUTCFullYear(), t.getUTCMonth() + 1, 1));
+  const last = new Date(Date.UTC(t.getUTCFullYear(), t.getUTCMonth() + 2, 0));
+  const v = c || { title:"", exercise:"スクワット", unit:"回", goal:5000, daily_cap:300,
+    starts_on: first.toISOString().slice(0,10), ends_on: last.toISOString().slice(0,10), note:"", video_url:"" };
+  const inp = (id, val, type, ph) => '<input id="'+id+'" type="'+(type||"text")+'" value="'+esc(val==null?"":val)+'" placeholder="'+esc(ph||"")+'" ' +
+    'style="width:100%;font-family:inherit;font-size:14px;padding:9px 10px;border:1px solid rgba(13,27,42,.2);border-radius:4px;background:var(--paper2)">';
+  const row = (label, html, note) => '<div style="margin:0 0 12px"><p class="sub" style="margin:0 0 4px;font-weight:800">'+label+'</p>'+html+(note?'<p class="sub" style="margin:4px 0 0">'+note+'</p>':'')+'</div>';
+  openModal('<p class="eyebrow">TPA CHALLENGE</p><h1 style="font-size:20px;margin:0 0 14px">'+(c?"チャレンジを直す":"チャレンジを作る")+'</h1>' +
+    row("タイトル（選手の画面の見出し）", inp("fTitle", v.title, "text", "例）11月 みんなでスクワット5,000回")) +
+    '<div style="display:grid;grid-template-columns:2fr 1fr;gap:10px">' + row("種目", inp("fEx", v.exercise)) + row("単位", inp("fUnit", v.unit)) + '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">' +
+      row("みんなの目標", inp("fGoal", v.goal, "number")) +
+      row("1人1日の上限", inp("fCap", v.daily_cap, "number"), "やりすぎ・押し間違いの防止") + '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">' +
+      row("はじまり", inp("fStart", v.starts_on, "date")) + row("おわり", inp("fEnd", v.ends_on, "date")) + '</div>' +
+    row("やり方・注意（選手の画面に出ます）", '<textarea id="fNote" rows="3" style="width:100%;font-family:inherit;font-size:14px;padding:9px 10px;border:1px solid rgba(13,27,42,.2);border-radius:4px;background:var(--paper2)">'+esc(v.note||"")+'</textarea>') +
+    row("やり方の動画URL（任意）", inp("fVideo", v.video_url, "url", "https://youtu.be/…")) +
+    '<p class="sub" id="fMsg"></p><button class="btn" id="fSave">保存する</button>');
+  $("fSave").addEventListener("click", async function(){
+    this.disabled = true; $("fMsg").textContent = "保存しています…";
+    try{
+      await capi("admin_challenge_save", { challenge: {
+        id: c ? c.id : undefined, title: $("fTitle").value, exercise: $("fEx").value, unit: $("fUnit").value,
+        goal: Number($("fGoal").value), daily_cap: Number($("fCap").value),
+        starts_on: $("fStart").value, ends_on: $("fEnd").value, note: $("fNote").value, video_url: $("fVideo").value } });
+      $("modal").innerHTML = ""; renderCh();
+    }catch(e){ $("fMsg").textContent = "保存できませんでした（"+e.message+"）"; this.disabled = false; }
+  });
+}
+
+async function chDetail(c){
+  openModal('<div class="spin"></div>');
+  try{
+    const r = await capi("admin_challenge_detail", { id: c.id });
+    const nm = (uid, dn) => { const m = (D.members||[]).find(x => x.line_user_id === uid); return esc((m && (m.note || m.display_name)) || dn || "（名前なし）"); };
+    const days = r.daily || [];
+    const max = Math.max(1, ...days.map(d => d.total));
+    let h = '<p class="eyebrow">TPA CHALLENGE</p><h1 style="font-size:20px;margin:0 0 6px">'+esc(c.title)+'</h1>' +
+      '<p class="sub" style="margin:0 0 14px">合計 '+Number(c.total).toLocaleString()+' / '+Number(c.goal).toLocaleString()+esc(c.unit)+'　参加 '+c.people+' 人</p>';
+    if(days.length){
+      h += '<div class="card"><p class="eyebrow" style="margin-bottom:8px">日ごとの合計</p>' + days.map(d =>
+        '<div style="display:flex;align-items:center;gap:8px;font-size:12.5px;margin:3px 0"><span style="width:44px">'+fmtD(d.done_on)+'</span>' +
+        '<div class="bar2" style="flex:1"><i style="width:'+Math.round(d.total/max*100)+'%"></i></div>' +
+        '<span style="width:84px;text-align:right">'+d.total.toLocaleString()+esc(c.unit)+'・'+d.people+'人</span></div>').join("") + '</div>';
+    }
+    h += '<div class="scroll"><table class="t"><tr><th>選手</th><th>参加した日</th><th>合計</th><th>最後</th></tr>' +
+      ((r.people||[]).length ? r.people.map(p => '<tr><td><b>'+nm(p.line_user_id, p.display_name)+'</b></td><td>'+p.days+' 日</td>' +
+        '<td>'+Number(p.total).toLocaleString()+esc(c.unit)+'</td><td>'+fmtDY(p.last_on)+'</td></tr>').join("")
+        : '<tr><td colspan="4" class="muted">まだ参加がありません</td></tr>') +
+      '</table></div><p class="muted" style="margin:12px 0 0;font-size:11.5px">参加した日が多い順です。この一覧は管理画面だけで見られます（選手には出ません）。' +
+      '毎回参加してくれる人は、アンバサダー候補の目安になります。</p>';
+    openModal(h);
+  }catch(e){ openModal('<p>読み込めませんでした（'+esc(e.message)+'）</p>'); }
 }
 
 /* ---------------- モーダル ---------------- */
