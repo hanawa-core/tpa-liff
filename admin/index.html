@@ -340,7 +340,7 @@ function renderLoad(){
   const rows = (D.members||[]).filter(m => m.load)
     .sort((a,b) => (a.load.last_record_on < b.load.last_record_on ? 1 : -1));
   $("pane").innerHTML = '<div class="card"><div class="scroll"><table class="t">' +
-    '<tr><th>選手</th><th>最終記録</th><th>直近7日</th><th>今週のTL</th><th>単調度</th><th>平均比</th><th>累計</th><th></th></tr>' +
+    '<tr><th>選手</th><th>最終記録</th><th>連続</th><th>直近7日</th><th>今週のTL</th><th>単調度</th><th>平均比</th><th>累計</th><th></th></tr>' +
     (rows.length ? rows.map(function(m){
       const l = m.load;
       const ratio = m.week_ratio;
@@ -348,14 +348,16 @@ function renderLoad(){
         : '<span class="pill '+(ratio>=1.5?"ng":ratio>=1.3?"warn":"gray")+'">'+Math.round(ratio*100)+'%</span>';
       return '<tr><td><b>'+name(m)+'</b></td>' +
         '<td>'+fmtDY(l.last_record_on)+(l.days_since>=5?' <span class="pill gray">'+l.days_since+'日</span>':'')+'</td>' +
+        '<td>'+(m.streak?'<b style="font-family:Georgia,serif">'+m.streak+'</b>日':'<span class="muted">0</span>')+'</td>' +
         '<td>'+l.days_7+' / 7</td>' +
         '<td>'+(m.week_tl!==null?'<b style="font-family:Georgia,serif">'+Number(m.week_tl).toLocaleString()+'</b>':'<span class="muted">—</span>')+'</td>' +
-        '<td>'+(m.monotony!==null?Number(m.monotony).toFixed(2):'<span class="muted">—</span>')+'</td>' +
+        '<td>'+(m.monotony!==null?'<span class="pill '+(m.monotony>=2?"ng":m.monotony>=1.5?"warn":"gray")+'">'+Number(m.monotony).toFixed(2)+'</span>':'<span class="muted">—</span>')+'</td>' +
         '<td>'+rp+'</td><td>'+l.total_records+'</td>' +
         '<td><button class="mini l-detail" data-u="'+esc(m.line_user_id)+'">推移</button></td></tr>';
-    }).join("") : '<tr><td colspan="8" class="muted">まだ記録がありません</td></tr>') +
+    }).join("") : '<tr><td colspan="9" class="muted">まだ記録がありません</td></tr>') +
     '</table></div><p class="muted" style="margin:12px 0 0;font-size:11.5px">' +
-    'TL＝sRPE-TL（練習時間×きつさ）。平均比が150%以上のときは、様子を見る目安です。</p></div>';
+    'TL＝sRPE-TL（練習時間×きつさ）。連続＝記録が続いている日数（休みの記録・おやすみチケットでもつながる）。<br>' +
+    '平均比：80〜130%＝いつもの範囲／130〜150%＝注意（黄）／150%以上＝要注意（赤）。単調度：1.5未満＝よい／1.5〜2.0＝ふつう（黄）／2.0以上＝注意（赤）。</p></div>';
   $("pane").querySelectorAll(".l-detail").forEach(b => b.addEventListener("click", () => loadDetail(b.dataset.u)));
 }
 
