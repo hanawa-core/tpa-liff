@@ -140,6 +140,57 @@ svg.g{width:100%;display:block}
 .hlist .r{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid rgba(13,27,42,.1)}
 .hlist .r b{font-weight:800}
 .hlist .r .tl{font-family:Georgia,serif;font-weight:900;font-size:16px}
+
+/* --- 続けたくなる仕組み（連続・スタンプ・バッジ） --- */
+.streakBar{display:flex;align-items:center;gap:10px;background:var(--paper2);border:1px solid rgba(13,27,42,.14);
+  border-radius:4px;padding:10px 12px;margin:0 0 14px;cursor:pointer}
+.streakBar .fire{font-size:24px;line-height:1}
+.streakBar .n{font-family:Georgia,serif;font-weight:900;font-size:24px;line-height:1}
+.streakBar .t{font-size:11px;color:var(--ink3);font-weight:800;letter-spacing:.06em}
+.streakBar .go{margin-left:auto;font-size:12.5px;font-weight:800;color:var(--gold);white-space:nowrap}
+.ring{position:relative;width:44px;height:44px;flex:0 0 auto}
+.ring svg{width:44px;height:44px;transform:rotate(-90deg)}
+.ring b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cal .h{font-size:10px;text-align:center;color:var(--ink3);font-weight:800}
+.cal .c{aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;
+  border:1px dashed rgba(13,27,42,.18);color:var(--ink3);position:relative}
+.cal .c.practice{background:var(--ink);border:0;color:var(--paper2)}
+.cal .c.off{background:var(--paper3);border:1px solid rgba(13,27,42,.25);color:var(--ink2)}
+.cal .c.ticket{background:rgba(205,167,86,.25);border:1px solid var(--gold-b);color:var(--gold)}
+.cal .c.future{border:0;opacity:.35}
+.cal .c.today{box-shadow:0 0 0 2px var(--gold-b)}
+.badges{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.medal{cursor:pointer;text-align:center;font-size:10.5px;line-height:1.35;color:var(--ink2)}
+.medal i{display:flex;width:52px;height:52px;margin:0 auto 5px;border-radius:50%;align-items:center;justify-content:center;
+  font-style:normal;font-family:Georgia,serif;font-weight:900;font-size:15px;color:#fff;box-shadow:inset 0 0 0 3px rgba(255,255,255,.35)}
+.medal.off i{background:rgba(13,27,42,.08) !important;color:rgba(13,27,42,.25);box-shadow:none}
+.medal.off{color:var(--ink3)}
+.zone{position:relative;display:flex;height:12px;border-radius:6px;overflow:hidden;margin:12px 0 4px}
+.zone span{display:block;height:100%}
+.zpin{position:relative;height:16px}
+.zpin b{position:absolute;top:0;transform:translateX(-50%);font-size:12px;line-height:1}
+.zlab{display:flex;font-size:10px;color:var(--ink3);font-weight:700}
+.zlab span{text-align:center}
+.legend2{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
+.legend2 td{padding:6px 4px;border-top:1px solid rgba(13,27,42,.1);vertical-align:top}
+.legend2 td:first-child{white-space:nowrap;font-weight:800}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.pill2{display:inline-block;font-size:11px;font-weight:800;padding:2px 8px;border-radius:10px;margin-left:6px;vertical-align:3px}
+/* 記録したあとのお祝い */
+.celebrate{position:fixed;inset:0;background:rgba(13,27,42,.55);z-index:20;display:flex;align-items:center;justify-content:center;padding:20px}
+.celebrate .box{background:var(--paper);border-radius:8px;max-width:360px;width:100%;padding:26px 20px 18px;text-align:center;position:relative;overflow:hidden}
+.stampBig{width:110px;height:110px;margin:0 auto 12px;border-radius:50%;border:5px solid var(--red);color:var(--red);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;transform:rotate(-12deg) scale(2.2);opacity:0;
+  animation:stampIn .45s cubic-bezier(.2,1.4,.4,1) .15s forwards}
+.stampBig.off{border-color:var(--ink2);color:var(--ink2)}
+.stampBig span{font-size:30px;line-height:1}
+.stampBig small{font-size:10px;letter-spacing:.2em}
+@keyframes stampIn{to{transform:rotate(-12deg) scale(1);opacity:1}}
+.cnum{font-family:Georgia,serif;font-weight:900;font-size:56px;line-height:1}
+.conf{position:absolute;top:-10px;width:8px;height:12px;opacity:.9;animation:fall 1.8s linear forwards}
+@keyframes fall{to{transform:translateY(420px) rotate(540deg);opacity:0}}
+@media (prefers-reduced-motion: reduce){.stampBig{animation:none;opacity:1;transform:rotate(-12deg)}.conf{display:none}}
 </style>
 </head>
 <body>
@@ -175,9 +226,19 @@ svg.g{width:100%;display:block}
       <p class="muted" id="chSub" style="margin:6px 0 0;font-size:12px"></p>
     </a>
 
+    <!-- 連続日数（押すとスタンプカード） -->
+    <div class="streakBar" id="streakBar">
+      <div class="ring"><svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="18" fill="none" stroke="rgba(13,27,42,.1)" stroke-width="5"/>
+        <circle id="ringArc" cx="22" cy="22" r="18" fill="none" stroke="#CDA756" stroke-width="5" stroke-linecap="round" stroke-dasharray="0 113.1"/></svg>
+        <b id="ringTxt">0/7</b></div>
+      <div><div class="t">連続記録</div><div><span class="n" id="stNum">0</span> <span class="t">日</span>　<span class="t" id="stSub"></span></div></div>
+      <div class="go">スタンプカード ›</div>
+    </div>
+
     <div class="tabs">
       <button id="tabIn" class="on">きょうを記録</button>
       <button id="tabSee">これまで</button>
+      <button id="tabCard">スタンプ</button>
     </div>
 
     <!-- ---------- 入力 ---------- -->
@@ -205,6 +266,11 @@ svg.g{width:100%;display:block}
     <!-- ---------- これまで ---------- -->
     <div id="paneSee" class="hide">
       <div id="seeBody"></div>
+    </div>
+
+    <!-- ---------- スタンプカード ---------- -->
+    <div id="paneCard" class="hide">
+      <div id="cardBody"><div class="spin"></div></div>
     </div>
 
     <div class="brand"><img class="logo-sm" src="../assets/tpa_logo_w720.png" alt="TENNIS PHYSICAL ARCHITECT"></div>
@@ -257,6 +323,7 @@ async function boot(){
     render();
     show("scMain");
     challengeCard();
+    showBadges();
   }catch(e){ fail("通信に失敗しました（"+e.message+"）。時間をおいて開き直してください。"); }
 }
 
@@ -307,10 +374,14 @@ async function save(d, r){
   if(busy) return; busy = true;
   $("tapHint").textContent = "記録しています…";
   try{
+    const first = !DATA.today_record;
+    const before = DATA.streak ? DATA.streak.current : 0;
     DATA = await api("load_submit", { duration_min: d, rpe: r, record_on: DATA.today });
     dur = d; rpe = r;
     render();
     $("tapHint").textContent = "記録しました。";
+    if(first) celebrate(d === 0, before);
+    else showBadges();
   }catch(e){
     $("tapHint").textContent = "記録できませんでした（"+e.message+"）。もう一度お試しください。";
   }finally{ busy = false; }
@@ -350,9 +421,9 @@ function renderSee(){
 
   h += '<div class="stats">' +
     '<div class="stat wide"><div class="k">今週の練習負荷　sRPE-TL</div>' +
-      '<div class="v">'+tl.toLocaleString()+' <span class="u">AU</span></div>' +
-      '<div class="u" style="font-weight:400">練習時間（分）× きつさ　の合計</div></div>' +
-    '<div class="stat"><div class="k">単調度　MONOTONY</div><div class="v">'+(mono!==null?mono.toFixed(2):"—")+'</div>' +
+      '<div class="v">'+tl.toLocaleString()+' <span class="u">AU</span>'+balPill(DATA.balance)+'</div>' +
+      '<div class="u" style="font-weight:400">練習時間（分）× きつさ　の合計'+(DATA.balance&&DATA.balance.ready&&DATA.balance.ratio!==null?'。色はいつもの1週間とくらべた目安（下の「負荷のバランス」）':'')+'</div></div>' +
+    '<div class="stat"><div class="k">単調度　MONOTONY</div><div class="v">'+(mono!==null?mono.toFixed(2):"—")+monoPill(mono)+'</div>' +
       '<div class="u" style="font-weight:400">週内のばらつき</div></div>' +
     '<div class="stat"><div class="k">緊張度　STRAIN</div><div class="v">'+(strain!==null?strain.toLocaleString():"—")+'</div>' +
       '<div class="u" style="font-weight:400">負荷 × 単調度</div></div>';
@@ -365,7 +436,9 @@ function renderSee(){
   }
   h += '</div>';
 
+  h += balanceCard(DATA.balance);
   h += notice(DATA.week_ratio, mono);
+  h += guideCard(mono);
   h += chartCard(recs);
   h += historyList(recs);
   $("seeBody").innerHTML = h;
@@ -450,21 +523,161 @@ async function challengeCard(){
   }catch(e){ /* 出さないだけ */ }
 }
 
+/* ---------------- 負荷の目安 ---------------- */
+// 負荷のバランス＝直近7日の合計 ÷ 直近4週の1週間あたり（急性：慢性負荷比）。
+// 0.8〜1.3 がちょうどよい範囲、1.5 以上はけがが起きやすくなる範囲とされている（Gabbett 2016 など）。
+const ZONES = [
+  { to:0.8, c:"#7FA7C9", l:"少なめ",       t:"いつもより軽い週。疲れを抜く週ならOK。続くと体力が落ちることも" },
+  { to:1.3, c:"#2F6E52", l:"ちょうどよい", t:"いつもの範囲。この中で少しずつ上げていくのが理想" },
+  { to:1.5, c:"#C9962E", l:"注意",         t:"いつもより多め。睡眠・食事・体の張りに気をつける" },
+  { to:9,   c:"#A8402C", l:"要注意",       t:"急に増えている。けがが起きやすい範囲。量か強さを少し落とす" },
+];
+function zoneOf(x){ return ZONES.find(z => x < z.to) || ZONES[ZONES.length-1]; }
+function balanceCard(b){
+  if(!b) return "";
+  if(!b.ready) return '<div class="card"><p class="label">負荷のバランス</p><p class="muted" style="margin:0">記録を始めて3週間たつと、「いつもの1週間」と比べた負荷のバランスを表示します。あと <b>'+b.daysLeft+'</b> 日です。</p></div>';
+  if(b.ratio === null) return "";
+  const z = zoneOf(b.ratio), MAX = 2.0;
+  const pos = Math.min(98, Math.max(2, b.ratio / MAX * 100));
+  const seg = [0,0.8,1.3,1.5,MAX];
+  return '<div class="card"><p class="label">負荷のバランス</p>' +
+    '<div style="display:flex;align-items:baseline;gap:8px"><span style="font-family:Georgia,serif;font-weight:900;font-size:30px">'+b.ratio.toFixed(2)+'</span>' +
+    '<span class="pill2" style="background:'+z.c+'22;color:'+z.c+'">'+z.l+'</span></div>' +
+    '<p class="muted" style="margin:2px 0 0;font-size:12px">直近7日 '+b.acute.toLocaleString()+' AU ÷ いつもの1週間 '+b.chronic.toLocaleString()+' AU</p>' +
+    '<div class="zpin"><b style="left:'+pos+'%">▼</b></div>' +
+    '<div class="zone">'+ZONES.map((zz,i)=>'<span style="width:'+((Math.min(seg[i+1],MAX)-seg[i])/MAX*100)+'%;background:'+zz.c+'"></span>').join("")+'</div>' +
+    '<div class="zlab"><span style="width:40%;text-align:left">0</span><span style="width:25%">0.8〜1.3</span><span style="width:10%">1.5</span><span style="width:25%;text-align:right">2.0</span></div>' +
+    '<p style="margin:10px 0 0;font-size:13px">'+z.t+'</p></div>';
+}
+function balPill(b){
+  if(!b || !b.ready || b.ratio === null) return "";
+  const z = zoneOf(b.ratio);
+  return '<span class="pill2" style="background:'+z.c+'22;color:'+z.c+'">'+z.l+'</span>';
+}
+function monoPill(m){
+  if(m === null || m === undefined) return "";
+  const z = m < 1.5 ? ["よい","#2F6E52"] : m < 2.0 ? ["ふつう","#C9962E"] : ["注意","#A8402C"];
+  return '<span class="pill2" style="background:'+z[1]+'22;color:'+z[1]+'">'+z[0]+'</span>';
+}
+function guideCard(){
+  return '<details class="card"><summary style="font-weight:800;cursor:pointer">数字の見かた（どこからどこまでが良い？）</summary>' +
+    '<p style="margin:12px 0 6px;font-size:13.5px"><b>sRPE-TL（練習負荷）</b>＝練習時間（分）× きつさ（1〜10）。単位のAUは「点数」のようなものです。<br>' +
+    '<span class="muted">例）90分 × きつさ6 ＝ 540 AU。1週間ぶんを足したものが「今週の練習負荷」です。</span></p>' +
+    '<p class="muted" style="font-size:12.5px;margin:0 0 10px">合計の数字そのものは、年齢・レベル・時期で大きく違うので「何AUなら良い」は決められません。<b>自分のいつもの1週間と比べて</b>見ます。</p>' +
+    '<p style="margin:0;font-size:13px;font-weight:800">負荷のバランス（直近7日 ÷ いつもの1週間）</p>' +
+    '<table class="legend2">' + ZONES.map((z,i)=>'<tr><td><span class="sw" style="background:'+z.c+'"></span>'+["0.8未満","0.8〜1.3","1.3〜1.5","1.5以上"][i]+'</td><td><b>'+z.l+'</b>　'+z.t+'</td></tr>').join("") + '</table>' +
+    '<p style="margin:14px 0 0;font-size:13px;font-weight:800">単調度（1週間の強弱のつき方）</p>' +
+    '<table class="legend2">' +
+      '<tr><td><span class="sw" style="background:#2F6E52"></span>1.5未満</td><td><b>よい</b>　きつい日と軽い日（休み）のメリハリがある</td></tr>' +
+      '<tr><td><span class="sw" style="background:#C9962E"></span>1.5〜2.0</td><td><b>ふつう</b>　少し毎日が似てきている</td></tr>' +
+      '<tr><td><span class="sw" style="background:#A8402C"></span>2.0以上</td><td><b>注意</b>　毎日ほぼ同じ強さ。体調をくずしやすいとされる。軽い日か休みを入れる</td></tr>' +
+    '</table>' +
+    '<p style="margin:14px 0 0;font-size:13px;font-weight:800">緊張度</p>' +
+    '<p class="muted" style="font-size:12.5px;margin:4px 0 0">今週の練習負荷 × 単調度。量が多く、しかも毎日同じ強さだと大きくなります。これも自分のいつもと比べて、急に大きくなっていないかを見ます。</p>' +
+    '<p class="muted" style="font-size:11.5px;margin:12px 0 0">※ スポーツ科学の研究で使われている目安です。数字は良し悪しを決めるものではなく、変化に気づくためのものです。痛みや不調があるときは数字にかかわらず休んでください。</p>' +
+    '</details>';
+}
+
+/* ---------------- 続けたくなる仕組み ---------------- */
+const BADGE_COLOR = { start:"#546C90", streak:"#C9962E", weeks:"#3E5273", total:"#2F7D5B", perfect:"#C8333F" };
+let GAME = null, gameMonth = null;
+function renderStreak(){
+  const s = DATA.streak; if(!s) return;
+  $("stNum").textContent = s.current;
+  $("stSub").textContent = (s.weeks ? "継続"+s.weeks+"週" : "") + (s.ticketLeft ? "　おやすみチケット1枚" : "");
+  const w = s.week || {done:0,goal:7};
+  $("ringArc").setAttribute("stroke-dasharray", (113.1 * Math.min(1, w.done / w.goal)).toFixed(1) + " 113.1");
+  $("ringTxt").textContent = w.done + "/" + w.goal;
+}
+async function loadCard(month){
+  $("cardBody").innerHTML = '<div class="spin"></div>';
+  try{ GAME = await api("game_get", month ? { month } : {}); gameMonth = GAME.month; renderCard(); }
+  catch(e){ $("cardBody").innerHTML = '<p class="muted">読み込めませんでした（'+e.message+'）</p>'; }
+}
+function renderCard(){
+  const g = GAME, y = +g.month.slice(0,4), m = +g.month.slice(5,7);
+  const firstDow = new Date(Date.UTC(y, m-1, 1)).getUTCDay();
+  const cells = Array(firstDow).fill('<div></div>').concat(g.stamps.map(s =>
+    '<div class="c '+s.stamp+(s.d===g.today?" today":"")+'">'+(s.stamp==="practice"?"練":s.stamp==="off"?"休":s.stamp==="ticket"?"券":(+s.d.slice(8)))+'</div>'));
+  const prev = new Date(Date.UTC(y, m-2, 1)).toISOString().slice(0,7), next = new Date(Date.UTC(y, m, 1)).toISOString().slice(0,7);
+  const earned = g.badges.filter(b=>b.earned).length;
+  $("cardBody").innerHTML =
+    '<div class="stats">' +
+      '<div class="stat"><div class="k">いまの連続</div><div class="v">'+g.streak.current+' <span class="u">日</span></div><div class="u" style="font-weight:400">いちばん長い '+g.streak.best+'日</div></div>' +
+      '<div class="stat"><div class="k">記録した日</div><div class="v">'+g.total+' <span class="u">日</span></div><div class="u" style="font-weight:400">継続 '+g.weeks.current+'週</div></div>' +
+    '</div>' +
+    '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin:0 0 10px">' +
+      '<button class="chip2" id="mPrev">‹</button><b>'+y+'年'+m+'月</b>' +
+      '<button class="chip2" id="mNext"'+(g.month>=g.today.slice(0,7)?' disabled style="opacity:.3"':'')+'>›</button></div>' +
+      '<div class="cal">'+["日","月","火","水","木","金","土"].map(x=>'<div class="h">'+x+'</div>').join("")+cells.join("")+'</div>' +
+      '<p class="muted" style="margin:10px 0 0;font-size:11.5px">練＝練習した日／休＝休みを記録した日／券＝おやすみチケットでつないだ日</p></div>' +
+    '<div class="note"><b>おやすみチケット</b>：のこり '+g.tickets.left+' 枚（毎月1枚）<br>' +
+      '<span style="font-size:12.5px;color:var(--ink2)">1日だけ記録を忘れても、次の日に記録すれば自動でつながります。休んだ日は「休み」を押すだけで記録になります。</span></div>' +
+    '<div class="card"><p class="label">バッジ　'+earned+' / '+g.badges.length+'</p><div class="badges">' +
+      g.badges.map(b => '<div class="medal'+(b.earned?"":" off")+'" data-how="'+b.how+'"><i style="background:'+BADGE_COLOR[b.group]+'">'+b.mark+'</i>'+b.title+'</div>').join("") + '</div>' +
+      '<p class="muted" id="howTxt" style="margin:12px 0 0;font-size:12px">バッジを押すと、もらい方が出ます。</p></div>';
+  document.querySelectorAll("#cardBody .medal").forEach(m => m.onclick = () => {
+    $("howTxt").innerHTML = "<b>"+m.textContent+"</b>："+m.dataset.how + (m.classList.contains("off") ? "" : "（もらいました）");
+  });
+  $("mPrev").onclick = () => loadCard(prev);
+  $("mNext").onclick = () => { if(next <= g.today.slice(0,7)) loadCard(next); };
+}
+function confetti(box){
+  const cs = ["#CDA756","#A8402C","#2F6E52","#3E5273","#0D1B2A"];
+  for(let i=0;i<40;i++){ const c=document.createElement("i"); c.className="conf";
+    c.style.left=(Math.random()*100)+"%"; c.style.background=cs[i%cs.length]; c.style.animationDelay=(Math.random()*.6)+"s";
+    box.appendChild(c); }
+}
+function celebrate(isRest, before){
+  const s = DATA.streak || { current: 0, week: {done:0,goal:7} };
+  const el = document.createElement("div"); el.className = "celebrate";
+  el.innerHTML = '<div class="box"><div class="stampBig'+(isRest?" off":"")+'"><span>'+(isRest?"休":"練")+'</span><small>'+(isRest?"REST":"DONE")+'</small></div>' +
+    '<p class="label" style="margin:0">連続記録</p><div class="cnum" id="cNum">'+before+'</div><p class="muted" style="margin:2px 0 10px">日</p>' +
+    '<p style="font-size:13.5px;margin:0 0 4px">'+(isRest?"休むのも大事なトレーニング。記録できました。":"きょうの記録ができました。")+'</p>' +
+    (DATA.ticket_used ? '<p class="muted" style="font-size:12px">おやすみチケットで '+DATA.ticket_used.slice(5).replace("-","/")+' をつなぎました</p>' : '') +
+    '<p class="muted" style="font-size:12px;margin:0 0 12px">今週 '+s.week.done+' / 7 日</p>' +
+    '<button class="btn" id="cOk">OK</button></div>';
+  document.body.appendChild(el);
+  confetti(el.querySelector(".box"));
+  let n = before; const tgt = s.current;
+  const t = setInterval(() => { if(n >= tgt){ clearInterval(t); return; } n++; const x = document.getElementById("cNum"); if(x) x.textContent = n; }, 120);
+  el.querySelector("#cOk").onclick = () => { el.remove(); showBadges(); };
+}
+function showBadges(){
+  const fresh = (DATA && DATA.fresh_badges) || [];
+  if(!fresh.length) return;
+  const b = fresh[0];
+  const el = document.createElement("div"); el.className = "celebrate";
+  el.innerHTML = '<div class="box"><p class="label">NEW BADGE</p>' +
+    '<div class="medal" style="font-size:15px;color:var(--ink);font-weight:800"><i style="width:84px;height:84px;font-size:24px;background:'+BADGE_COLOR[b.group]+'">'+b.mark+'</i>'+b.title+'</div>' +
+    '<p class="muted" style="font-size:12.5px;margin:10px 0 14px">バッジをもらいました。スタンプカードで見られます。</p>' +
+    (fresh.length>1 ? '<p class="muted" style="font-size:12px">ほかに '+(fresh.length-1)+' 個</p>' : '') +
+    '<button class="btn" id="bOk">OK</button></div>';
+  document.body.appendChild(el);
+  confetti(el.querySelector(".box"));
+  el.querySelector("#bOk").onclick = () => {
+    el.remove();
+    api("game_seen", { keys: fresh.map(x=>x.key) }).catch(()=>{});
+    DATA.fresh_badges = [];
+  };
+}
+
 /* ---------------- 描画 ---------------- */
 function render(){
   $("today").textContent = fmtD(DATA.today) + "（" + wd(DATA.today) + "）";
   renderInput();
   renderSee();
+  renderStreak();
 }
-$("tabIn").addEventListener("click", function(){
-  $("tabIn").classList.add("on"); $("tabSee").classList.remove("on");
-  $("paneIn").classList.remove("hide"); $("paneSee").classList.add("hide");
-});
-$("tabSee").addEventListener("click", function(){
-  $("tabSee").classList.add("on"); $("tabIn").classList.remove("on");
-  $("paneSee").classList.remove("hide"); $("paneIn").classList.add("hide");
-  drawChart(DATA.records);
-});
+function tab(name){
+  ["In","See","Card"].forEach(n => { $("tab"+n).classList.toggle("on", n===name); $("pane"+n).classList.toggle("hide", n!==name); });
+  if(name === "See") drawChart(DATA.records);
+  if(name === "Card") loadCard(gameMonth);
+}
+$("tabIn").addEventListener("click", () => tab("In"));
+$("tabCard").addEventListener("click", () => tab("Card"));
+$("streakBar").addEventListener("click", () => tab("Card"));
+$("tabSee").addEventListener("click", () => tab("See"));
 boot();
 })();
 </script>
